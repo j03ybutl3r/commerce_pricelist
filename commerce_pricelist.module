@@ -8,8 +8,8 @@
 define('COMMERCE_PRICELIST_UNIX_TIME_APOCALYPSE', 2147390000);
 
 // Include CRUD methods for our entites.
-include_once 'includes/commerce_pricelist_item.inc';
-include_once 'includes/commerce_pricelist_list.inc';
+module_load_include('inc', 'commerce_pricelist', 'includes/commerce_pricelist_item');
+module_load_include('inc', 'commerce_pricelist', 'includes/commerce_pricelist_list');
 
 /**
  * Implements hook_menu().
