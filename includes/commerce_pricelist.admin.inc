@@ -180,6 +180,7 @@ function commerce_pricelist_list_edit_delete($form, &$form_state) {
  */
 function commerce_pricelist_draggable_form($form_state) {
 
+  $list_count = 0;
   $content = array();
 
   // Load all of our entities ordered by weight.
@@ -190,7 +191,14 @@ function commerce_pricelist_draggable_form($form_state) {
   $result = $query->execute();
 
   if (!empty($result['commerce_pricelist_list'])) {
-    $entities = commerce_pricelist_list_load_multiple(array_keys($result['commerce_pricelist_list']));
+    $list_count = count($result['commerce_pricelist_list']);
+    $per_page = 50;
+    // Initialize the pager
+    $current_page = pager_default_initialize($list_count, $per_page);
+    // Split your list into page sized chunks
+    $chunks = array_chunk($result['commerce_pricelist_list'], $per_page, TRUE);
+    // Show the appropriate items from the list
+    $entities = commerce_pricelist_list_load_multiple(array_keys($chunks[$current_page]));
   }
 
   if (!empty($entities)) {
@@ -272,6 +280,8 @@ function commerce_pricelist_draggable_form($form_state) {
     // but is included as a Form API recommended practice.
     $form['actions'] = array('#type' => 'actions');
     $form['actions']['submit'] = array('#type' => 'submit', '#value' => t('Save Changes'));
+
+    $form['pager']['#markup'] = theme('pager', array('quantity',$list_count));
 
     return $form;
   }
@@ -415,6 +425,7 @@ function commerce_pricelist_draggable_form_submit($form, &$form_state) {
 function commerce_pricelist_item_list_entities($pricelist_id = NULL, $sku = FALSE) {
   $content = array();
   $entities = array();
+  $item_count = 0;
 
   if ($pricelist_id) {
 
@@ -430,8 +441,14 @@ function commerce_pricelist_item_list_entities($pricelist_id = NULL, $sku = FALS
     $result = $query->execute();
 
     if (!empty($result)) {
-      // Load all of our entities.
-      $entities = commerce_pricelist_item_load_multiple(array_keys($result['commerce_pricelist_item']));
+      $item_count = count($result['commerce_pricelist_item']);
+      $per_page = 50;
+      // Initialize the pager
+      $current_page = pager_default_initialize($item_count, $per_page);
+      // Split your list into page sized chunks
+      $chunks = array_chunk($result['commerce_pricelist_item'], $per_page, TRUE);
+      // Show the appropriate items from the list
+      $entities = commerce_pricelist_item_load_multiple(array_keys($chunks[$current_page]));
     }
 
   } else {
@@ -475,6 +492,9 @@ function commerce_pricelist_item_list_entities($pricelist_id = NULL, $sku = FALS
       '#markup' => t('No price list items currently exist.'),
     );
   }
+
+  $content['pager']['#markup'] = theme('pager', array('quantity',$item_count));
+
   return $content;
 }
 
