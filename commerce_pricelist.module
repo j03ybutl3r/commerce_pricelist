@@ -224,10 +224,10 @@ function commerce_pricelist_entity_property_info() {
     'schema field' => 'changed',
   );
   // @todo: Info about 'data' property.
-  
-  //$info['commerce_pricelist_list']['properties'] = $properties;
-  
-  
+
+  $info['commerce_pricelist_list']['properties'] = $properties;
+
+
   // Add meta-data about the commerce_pricelist_item properties.
   $properties = array();
 
@@ -290,7 +290,7 @@ function commerce_pricelist_entity_property_info() {
   );
 
   $info['commerce_pricelist_item']['properties'] = $properties;
-  
+
   return $info;
 }
 
