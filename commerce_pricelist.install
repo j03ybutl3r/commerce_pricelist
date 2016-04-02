@@ -17,13 +17,6 @@ function commerce_pricelist_schema() {
   $schema['commerce_pricelist_list'] = array(
     'description' => 'The base table for our price list entity.',
     'fields' => array(
-      'uuid' => array(
-        'type' => 'char',
-        'length' => 36,
-        'not null' => TRUE,
-        'default' => '',
-        'description' => 'The Universally Unique Identifier.',
-      ),
       'list_id' => array(
         'description' => 'The primary identifier for a list.',
         'type' => 'serial',
@@ -86,13 +79,6 @@ function commerce_pricelist_schema() {
   $schema['commerce_pricelist_item'] = array(
     'description' => 'The base table for our price list item entity.',
     'fields' => array(
-      'uuid' => array(
-        'type' => 'char',
-        'length' => 36,
-        'not null' => TRUE,
-        'default' => '',
-        'description' => 'The Universally Unique Identifier.',
-      ),
       'item_id' => array(
         'description' => 'The primary identifier for an item.',
         'type' => 'serial',
@@ -163,6 +149,7 @@ function commerce_pricelist_schema() {
 
   // Support for UUID module.
   if (module_exists('uuid')) {
+    module_load_include('install', 'uuid', 'uuid');
     $field = uuid_schema_field_definition();
     $schema['commerce_pricelist_item']['fields']['uuid'] = $field;
     $schema['commerce_pricelist_item']['indexes']['uuid'] = array('uuid');
