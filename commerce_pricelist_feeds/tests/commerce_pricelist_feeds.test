@@ -32,7 +32,8 @@ class CommercePricelistFeedsTestCaseSimpleProduct extends CommercePricelistTestC
     parent::setUp(array(
       'commerce_pricelist_feeds',
       'commerce_pricelist_feeds_example',
-      'feeds'));
+      'feeds',
+      'feeds_ui'));
 
     $this->feeds_admin = $this->createAdminUser(array(
       'administer feeds'

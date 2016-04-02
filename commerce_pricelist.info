@@ -15,8 +15,9 @@ files[] = tests/commerce_pricelist.test
 
 dependencies[] = commerce
 dependencies[] = commerce_line_item
+dependencies[] = commerce_checkout
+dependencies[] = commerce_product_reference
 dependencies[] = commerce_price
 dependencies[] = commerce_product
-dependencies[] = commerce_product_pricing
 dependencies[] = entity
 dependencies[] = rules
