@@ -54,15 +54,23 @@ function commerce_pricelist_feeds_feeds_plugins() {
  * Implements hook_form_BASE_FORM_ID_alter().
  */
 function commerce_pricelist_feeds_form_commerce_pricelist_list_form_alter(&$form, $form_state) {
-  $importer_id = commerce_pricelist_feeds_get_importer_id();
+  $feeds_info = system_get_info('module', 'feeds');
+  $feeds_is_alpha = (strpos($feeds_info['version'], '7.x-2.0-alpha') === 0);
 
-  if ($importer_id) {
+  if ($feeds_is_alpha) {
+    $importer = commerce_pricelist_feeds_get_importer_id();
+    drupal_set_message('You are using an older alpha version of the Feeds module, support for this version will be removed in future versions of Commerce Pricelist. Please upgrade.','warning');
+  } else {
+    $importer = commerce_pricelist_feeds_get_importer();
+  }
+
+  if ($importer) {
     module_load_include('inc', 'feeds', 'feeds.pages');
 
     $entity = $form['entity']['#value'];
     $fake_nid = _commerce_pricelist_feeds_fake_nid($entity);
     $feeds_form = array('nid' => array('#value' => $fake_nid));
-    $feeds_form = feeds_import_form($feeds_form, $form_state, $importer_id);
+    $feeds_form = feeds_import_form($feeds_form, $form_state, $importer);
 
     $form += $feeds_form;
 
@@ -151,7 +159,7 @@ function commerce_pricelist_feeds_entity_update($entity, $type) {
       }
       // Schedule source and importer.
       $source->schedule();
-      feeds_importer($importer_id)->schedule();
+      //feeds_importer($importer_id)->schedule();
     }
   }
 }
@@ -172,25 +180,34 @@ function commerce_pricelist_feeds_entity_delete($entity, $type) {
   }
 }
 
+
+/**
+ * Get the first importer configured to be attached to price lists.
+ *
+ * @return bool|int|string
+ */
+function commerce_pricelist_feeds_get_importer() {
+  $importers = feeds_importer_load_all();
+
+  // Check if any one importer is configured as attached
+  foreach($importers as $id => $importer) {
+    $conf = $importer->processor->config;
+    if ($conf['bundle'] == 'commerce_pricelist_item' && $conf['is_attached']) {
+      return $importer;
+    }
+  }
+
+  return FALSE;
+}
+
 /**
  * Get the first importer configured to be attached to price lists.
  *
  * @return bool|int|string
  */
 function commerce_pricelist_feeds_get_importer_id() {
-  $importers = feeds_importer_load_all();
-  $importer_id = FALSE;
-
-  // Check if any one importer is configured as attached
-  foreach($importers as $id => $importer) {
-    $conf = $importer->processor->config;
-    if ($conf['bundle'] == 'commerce_pricelist_item' && $conf['is_attached']) {
-      $importer_id = $id;
-      break;
-    }
-  }
-
-  return $importer_id;
+  $importer = commerce_pricelist_feeds_get_importer();
+  return $importer ? $importer->id : FALSE;
 }
 
 /**
