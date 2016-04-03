@@ -316,7 +316,7 @@ function commerce_pricelist_permission() {
 }
 
 /**
- * Return an array of prices like {sku : {pricelist_uuid: {quantity : price }}}.
+ * Return an array of prices like {sku : {pricelist_id: {quantity : price }}}.
  *
  * @todo take currency into account...
  *
