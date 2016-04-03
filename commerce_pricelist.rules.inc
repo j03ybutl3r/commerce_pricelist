@@ -63,8 +63,8 @@ $actions = array();
           'type' => 'text',
           'label' => t('Price component type'),
           'description' => t('Price components track changes to prices made during the price calculation process, and they are carried over from the unit price to the total price of a line item. When an order total is calculated, it combines all the components of every line item on the order. When the unit price is altered by this action, the selected type of price component will be added to its data array and reflected in the order total display when it is formatted with components showing. Defaults to base price, which displays as the order Subtotal.'),
-          'options list' => 'commerce_line_item_price_component_options_list',
-          'default value' => 'base_price',
+          'options list' => 'commerce_price_component_titles',
+          'default value' => 'list_price',
         ),
         'round_mode' => array(
           'type' => 'integer',

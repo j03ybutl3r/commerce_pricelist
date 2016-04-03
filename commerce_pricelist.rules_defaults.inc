@@ -72,7 +72,7 @@ function commerce_pricelist_default_rules_configuration() {
             { "commerce_pricelist_unit_price_amount" : {
                 "commerce_line_item" : [ "commerce_line_item" ],
                 "amount" : [ "list-item:amount" ],
-                "component_name" : "base_price",
+                "component_name" : "list_price",
                 "round_mode" : "0"
               }
             }

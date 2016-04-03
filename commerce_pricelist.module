@@ -294,6 +294,16 @@ function commerce_pricelist_entity_property_info() {
   return $info;
 }
 
+function commerce_pricelist_commerce_price_component_type_info() {
+  return array(
+    'list_price' => array(
+      'title' => t('List price'),
+      'display_title' => t('Your pricelist difference'),
+      'weight' => -45,
+    )
+  );
+}
+
 /**
  * Implements hook_permission().
  */
