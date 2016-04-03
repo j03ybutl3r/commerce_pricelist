@@ -38,6 +38,11 @@ abstract class CommercePricelistTestCase extends CommerceBaseTestCase {
   protected $site_admin;
 
   /**
+   * User with customer permissions.
+   */
+  protected $store_customer;
+
+  /**
    * Helper function to  perform the common test tasks for price list testing.
    * @see CommerceBaseTestCase::setUpHelper()
    */
@@ -51,13 +56,10 @@ abstract class CommercePricelistTestCase extends CommerceBaseTestCase {
 
     // Create dummy product display nodes (and their corresponding product
     //  entities).
-    $sku = 'PROD-01';
-    $product_name = 'Product One';
-    $this->product = $this->createDummyProduct($sku, $product_name, 0);
-    $this->product_node = $this->createDummyProductNode(array($this->product->product_id), $product_name);
     $this->pricelist_a = $this->createDummyPricelist('A', 0);
     $this->pricelist_b = $this->createDummyPricelist('B', 1);
-
+    $this->product = $this->createDummyProduct('', '', 0);
+    $this->product_node = $this->createDummyProductNode(array($this->product->product_id));
     $this->store_admin = $this->createStoreAdmin();
     $this->store_customer = $this->createStoreCustomer();
     $this->site_admin = $this->createAdminUser();
@@ -119,6 +121,35 @@ abstract class CommercePricelistTestCase extends CommerceBaseTestCase {
     );
     $permissions += $this->permissionBuilder(array('store admin', 'site admin'));
     return $this->drupalCreateUser($permissions);
+  }
+
+  /**
+   * Go through the checkout process.
+   */
+  protected function commercePricelistHelperCompleteCheckout() {
+    // Get the checkout url and navigate to it.
+    $links = commerce_line_item_summary_links();
+    $this->checkout_url = $links['checkout']['href'];
+    $this->drupalGet($this->checkout_url);
+
+    // The rule that sends a mail after checkout completion should be disabled
+    //  as it returns an error caused by how mail messages are stored.
+    $rules_config = rules_config_load('commerce_checkout_order_email');
+    $rules_config->active = FALSE;
+    $rules_config->save();
+
+    // Complete the order process.
+    $billing_pane = $this->xpath("//select[starts-with(@name, 'customer_profile_billing[commerce_customer_address]')]");
+    $this->drupalPostAJAX(NULL, array((string) $billing_pane[0]['name'] => 'US'), (string) $billing_pane[0]['name']);
+    $info = array(
+      'customer_profile_billing[commerce_customer_address][und][0][name_line]' => $this->randomName(),
+      'customer_profile_billing[commerce_customer_address][und][0][thoroughfare]' => $this->randomName(),
+      'customer_profile_billing[commerce_customer_address][und][0][locality]' => $this->randomName(),
+      'customer_profile_billing[commerce_customer_address][und][0][administrative_area]' => 'KY',
+      'customer_profile_billing[commerce_customer_address][und][0][postal_code]' => rand(00000, 99999),
+    );
+    $this->drupalPost(NULL, $info, t('Continue to next step'));
+    $this->drupalPost(NULL, array(), t('Continue to next step'));
   }
 }
 

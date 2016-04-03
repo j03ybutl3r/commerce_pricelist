@@ -1,0 +1,79 @@
+<?php
+
+/**
+ * @file
+ * Functional tests for the commerce price list module.
+ */
+
+
+/**
+ * Test price list features for a product display that only has one product attached.
+ */
+class CommercePricelistTaxTest extends CommercePricelistTestCase {
+
+  /**
+   * Tax type.
+   */
+  protected $tax_type;
+
+  /**
+   * Implementation of getInfo().
+   */
+  public static function getInfo() {
+    return array(
+      'name' => 'Commerce Pricelist Tax tests',
+      'description' => 'Test price list features when using commerce tax.',
+      'group' => 'Commerce Pricelist',
+    );
+  }
+
+  /**
+   * Implementation of setUp().
+   */
+  function setUp($other_modules = array()) {
+    $modules = parent::setUpHelper('all');
+    parent::setUp($modules);
+
+    // Create a dummy tax type for testing.
+    $this->tax_type = $this->createDummyTaxType();
+  }
+
+  /**
+   * Check the taxes applied in the order that a normal user can view.
+   */
+  public function testCommercePricelistTaxIncludedUserOrderView() {
+    // Create a tax rate VAT Type.
+    $tax_rate = $this->createDummyTaxRate(array('type' => 'vat', 'rate' => 0.1));
+
+    // Create a new product and product display.
+    $this->createDummyProductDisplayContentType();
+    $product = $this->createDummyProduct('', '', '1337');
+    $product_node = $this->createDummyProductNode(array($product->product_id));
+
+    // Add pricelist item.
+    $pricelist_item = $this->createDummyPricelistItem(array('sku' => $product->sku));
+
+    // Login with store admin user.
+    $this->drupalLogin($this->site_admin);
+
+    // Edit the product to be VAT tax inclusive.
+    $this->drupalGet('admin/commerce/products/' . $product->product_id . '/edit');
+    $this->drupalPost(NULL, array('commerce_price[und][0][include_tax]' => $tax_rate['name']), t('Save product'));
+
+    // Create new order and products associated to it.
+    $order = $this->createDummyOrder($this->store_customer->uid, array($product->product_id => 1));
+
+    // Login with normal user.
+    $this->drupalLogin($this->store_customer);
+
+    // Go through the complete order process.
+    $this->commercePricelistHelperCompleteCheckout();
+
+    // Access the View orders page and view the order just created.
+    $this->drupalGet('user/' . $this->store_customer->uid . '/orders/' . $order->order_id);
+
+    // Check the taxes applied.
+    $this->assertText($tax_rate['display_title'], t('Tax display title is displayed in the user view of an order.'));
+    $this->assertText(trim(commerce_currency_format($pricelist_item->price_amount * 0.1, $pricelist_item->currency_code)), t('Tax amount is displayed in the user view of an order.'));
+  }
+}

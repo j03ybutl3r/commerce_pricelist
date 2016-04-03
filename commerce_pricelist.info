@@ -12,6 +12,7 @@ files[] = commerce_pricelist.rules.inc
 
 ; Tests
 files[] = tests/commerce_pricelist.test
+files[] = tests/commerce_pricelist_tax.test
 
 dependencies[] = commerce
 dependencies[] = commerce_line_item
