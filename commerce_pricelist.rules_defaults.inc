@@ -69,7 +69,7 @@ function commerce_pricelist_default_rules_configuration() {
                 "currency_code" : [ "list-item:currency-code" ]
               }
             },
-            { "commerce_line_item_unit_price_amount" : {
+            { "commerce_pricelist_unit_price_amount" : {
                 "commerce_line_item" : [ "commerce_line_item" ],
                 "amount" : [ "list-item:amount" ],
                 "component_name" : "base_price",

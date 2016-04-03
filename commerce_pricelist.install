@@ -272,3 +272,12 @@ function commerce_pricelist_update_7003(&$sandbox) {
   }
 }
 */
+
+/**
+ * Revert the pricelist rule to use our own custom price setting action.
+ */
+function commerce_pricelist_update_7004() {
+  if ($rules_config = rules_config_load('rules_commerce_price_list_set_price')) {
+    $rules_config->delete();
+  }
+}
