@@ -162,6 +162,22 @@ class PriceList extends CommerceContentEntityBase implements PriceListInterface 
   /**
    * {@inheritdoc}
    */
+  public static function postDelete(EntityStorageInterface $storage, array $entities) {
+    // Delete the price list item of a deleted price list.
+    foreach ($entities as $entity) {
+      $price_list_items = $entity->getItems();
+      if (empty($price_list_items)) {
+        continue;
+      }
+
+      $price_list_item_storage = \Drupal::service('entity_type.manager')->getStorage('price_list_item');
+      $price_list_item_storage->delete($price_list_items);
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public static function baseFieldDefinitions(EntityTypeInterface $entity_type) {
     $fields = parent::baseFieldDefinitions($entity_type);
 
