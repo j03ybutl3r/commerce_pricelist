@@ -17,6 +17,13 @@ use Drupal\user\UserInterface;
  * @ContentEntityType(
  *   id = "price_list",
  *   label = @Translation("Price list"),
+ *   label_collection = @Translation("Price lists"),
+ *   label_singular = @Translation("price list"),
+ *   label_plural = @Translation("price lists"),
+ *   label_count = @PluralTranslation(
+ *     singular = "@count price list",
+ *     plural = "@count price lists",
+ *   ),
  *   bundle_label = @Translation("Price list type"),
  *   handlers = {
  *     "view_builder" = "Drupal\Core\Entity\EntityViewBuilder",
@@ -33,9 +40,12 @@ use Drupal\user\UserInterface;
  *     "route_provider" = {
  *       "html" = "Drupal\commerce_pricelist\PriceListHtmlRouteProvider",
  *     },
+ *     "translation" = "Drupal\content_translation\ContentTranslationHandler"
  *   },
- *   base_table = "price_list",
  *   admin_permission = "administer price_list",
+ *   translatable = TRUE,
+ *   base_table = "price_list",
+ *   data_table = "price_list_field_data",
  *   entity_keys = {
  *     "id" = "id",
  *     "bundle" = "type",
@@ -43,6 +53,7 @@ use Drupal\user\UserInterface;
  *     "uuid" = "uuid",
  *     "uid" = "user_id",
  *     "status" = "status",
+ *     "langcode" = "langcode",
  *   },
  *   links = {
  *     "canonical" = "/price_list/{price_list}",
