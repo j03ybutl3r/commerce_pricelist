@@ -12,7 +12,7 @@ use Drupal\user\EntityOwnerInterface;
  * @ingroup commerce_pricelist
  */
 interface PriceListInterface extends ContentEntityInterface, EntityChangedInterface, EntityOwnerInterface {
-  // Add get/set methods for your configuration properties here.
+
   /**
    * Gets the Price list type.
    *

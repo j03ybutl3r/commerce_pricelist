@@ -5,121 +5,103 @@ namespace Drupal\commerce_pricelist\Entity;
 use Drupal\commerce_price\Price;
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityChangedInterface;
+use Drupal\user\EntityOwnerInterface;
 
 /**
- * Provides an interface for defining Price list item entities.
+ * Defines the interface for price list items.
  *
  * @ingroup commerce_pricelist
  */
-interface PriceListItemInterface extends ContentEntityInterface, EntityChangedInterface {
-  // Add get/set methods for your configuration properties here.
+interface PriceListItemInterface extends ContentEntityInterface, EntityChangedInterface, EntityOwnerInterface {
+
   /**
-   * Gets the Price list item name.
+   * Gets the price list item name.
    *
    * @return string
-   *   Name of the Price list item.
+   *   Name of the price list item.
    */
   public function getName();
 
   /**
-   * Sets the Price list item name.
+   * Sets the price list item name.
    *
    * @param string $name
-   *   The Price list item name.
+   *   The price list item name.
    *
-   * @return \Drupal\commerce_pricelist\Entity\PriceListItemInterface
-   *   The called Price list item entity.
+   * @return $this
    */
   public function setName($name);
 
   /**
-   * Gets the Price list item quantity.
+   * Gets the price list item quantity.
    *
    * @return string
-   *   Quantity of the Price list item.
+   *   Quantity of the price list item.
    */
   public function getQuantity();
 
   /**
-   * Sets the Price list item quantity.
+   * Sets the price list item quantity.
    *
    * @param string $quantity
-   *   The Price list item quantity.
+   *   The price list item quantity.
    *
-   * @return \Drupal\commerce_pricelist\Entity\PriceListItemInterface
-   *   The called Price list item entity.
+   * @return $this
    */
   public function setQuantity($quantity);
 
   /**
-   * Gets the Price list item creation timestamp.
+   * Gets the price list item creation timestamp.
    *
    * @return int
-   *   Creation timestamp of the Price list item.
+   *   Creation timestamp of the price list item.
    */
   public function getCreatedTime();
 
   /**
-   * Sets the Price list item creation timestamp.
+   * Sets the price list item creation timestamp.
    *
    * @param int $timestamp
-   *   The Price list item creation timestamp.
+   *   The price list item creation timestamp.
    *
-   * @return \Drupal\commerce_pricelist\Entity\PriceListItemInterface
-   *   The called Price list item entity.
+   *   * @return $this.
    */
   public function setCreatedTime($timestamp);
 
   /**
-   * Returns the Price list item published status indicator.
+   * Sets the parent price list ID.
    *
-   * Unpublished Price list item are only visible to restricted users.
+   * @param string $price_list_id
+   *   The parent price list ID.
    *
-   * @return bool
-   *   TRUE if the Price list item is published.
+   * @return $this
    */
-  public function isPublished();
+  public function setPriceListId($price_list_id);
 
   /**
-   * Sets the published status of a Price list item.
+   * Sets the parent price list.
    *
-   * @param bool $published
-   *   TRUE to set this Price list item to published, FALSE to set it to unpublished.
+   * @param \Drupal\commerce_pricelist\Entity\PriceListInterface $price_list
+   *   The price list entity.
    *
-   * @return \Drupal\commerce_pricelist\Entity\PriceListItemInterface
-   *   The called Price list item entity.
+   * @return $this
    */
-  public function setPublished($published);
+  public function setPriceList(PriceListInterface $price_list);
 
   /**
-   * Gets the Price list item weight.
+   * Gets the price list.
    *
-   * @return string
-   *   Weight of the Price list item.
+   * @return $this
    */
-  public function getWeight();
+  public function getPriceList();
 
   /**
-   * Sets the Price list item weight.
+   * Gets the price list ID.
    *
-   * @param string $weight
-   *   The Price list item weight.
-   *
-   * @return \Drupal\commerce_pricelist\Entity\PriceListItemInterface
-   *   The called Price list item entity.
+   * @return int
+   *   The parent price list entity ID.
    */
-  public function setWeight($weight);
-
-  /**
-   * Sets the Price list item price_list_id.
-   *
-   * @param string $priceListId
-   *   The Price list item price_list_id.
-   *
-   * @return \Drupal\commerce_pricelist\Entity\PriceListItemInterface
-   *   The called Price list item entity.
-   */
-  public function setPriceListId($priceListId);
+  public function getPriceListId();
 
   /**
    * Gets whether the price list item has a purchased entity.
@@ -146,33 +128,53 @@ interface PriceListItemInterface extends ContentEntityInterface, EntityChangedIn
   public function getPurchasedEntityId();
 
   /**
-   * Sets the Price list item purchased entity.
+   * Sets the price list item purchased entity ID.
    *
-   * @param string $target_id
-   *   The Price list item purchased_entity_id.
+   * @param string $purchased_entity_id
+   *   The purchased entity ID.
    *
-   * @return \Drupal\commerce_pricelist\Entity\PriceListItemInterface
-   *   The called Price list item entity.
+   * @return $this
    */
-  public function setPurchasedEntityId($target_id);
+  public function setPurchasedEntityId($purchased_entity_id);
 
   /**
-   * Gets the Price list item price.
+   * Gets the price list item price.
    *
-   * @return string
-   *   Price of the Price list item.
+   * @return \Drupal\commerce_price\Price
+   *   The price.
    */
   public function getPrice();
 
   /**
-   * Sets the Price list item price.
+   * Sets the price list item price.
    *
    * @param \Drupal\commerce_price\Price $price
-   *   The Price list item Price.
+   *   The price.
    *
-   * @return \Drupal\commerce_pricelist\Entity\PriceListItemInterface
-   *   The called Price list item entity.
+   * @return $this
    */
   public function setPrice(Price $price);
+
+  /**
+   * Get whether or not the price list item is active.
+   *
+   * @return bool
+   *   TRUE if the rice list item is acive, FALSE otherwise.
+   */
+  public function isActive();
+
+  /**
+   * Sets the price list item active.
+   *
+   * @return $this
+   */
+  public function setActive();
+
+  /**
+   * Set the price list item inactive.
+   *
+   * @return $this
+   */
+  public function setInactive();
 
 }
