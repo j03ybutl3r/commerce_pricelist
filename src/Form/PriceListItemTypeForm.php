@@ -3,12 +3,47 @@
 namespace Drupal\commerce_pricelist\Form;
 
 use Drupal\commerce\EntityHelper;
+use Drupal\commerce\EntityTraitManagerInterface;
 use Drupal\commerce\Form\CommerceBundleEntityFormBase;
 use Drupal\commerce\PurchasableEntityInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\Core\Messenger\MessengerInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 class PriceListItemTypeForm extends CommerceBundleEntityFormBase {
+
+  /**
+   * The messenger service.
+   *
+   * @var \Drupal\Core\Messenger\MessengerInterface
+   */
+  protected $messenger;
+
+  /**
+   * Constructs a new CommerceBundleEntityFormBase object.
+   *
+   * @param \Drupal\commerce\EntityTraitManagerInterface $trait_manager
+   *   The entity trait manager.
+   *
+   *@param \Drupal\Core\Messenger\MessengerInterface $messenger
+   *   The messenger service.
+   */
+  public function __construct(EntityTraitManagerInterface $trait_manager, MessengerInterface $messenger) {
+    parent::__construct($trait_manager);
+    $this->traitManager = $trait_manager;
+    $this->messenger = $messenger;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container) {
+    return new static(
+      $container->get('plugin.manager.commerce_entity_trait'),
+      $container->get('messenger')
+    );
+  }
 
   /**
    * {@inheritdoc}
@@ -77,7 +112,7 @@ class PriceListItemTypeForm extends CommerceBundleEntityFormBase {
     $this->entity->save();
     $this->submitTraitForm($form, $form_state);
 
-    drupal_set_message($this->t('Saved the %label price list item type.', [
+    $this->messenger->addMessage($this->t('Saved the %label price list item type.', [
       '%label' => $this->entity->label(),
     ]));
     $form_state->setRedirect('entity.price_list_item_type.collection');
