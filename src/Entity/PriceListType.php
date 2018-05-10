@@ -22,7 +22,7 @@ use Drupal\commerce\Entity\CommerceBundleEntityBase;
  *     "form" = {
  *       "add" = "Drupal\commerce_pricelist\Form\PriceListTypeForm",
  *       "edit" = "Drupal\commerce_pricelist\Form\PriceListTypeForm",
- *       "delete" = "Drupal\commerce_pricelist\Form\PriceListTypeDeleteForm"
+ *       "delete" = "Drupal\Core\Entity\ContentEntityDeleteForm"
  *     },
  *     "route_provider" = {
  *       "default" = "Drupal\Core\Entity\Routing\DefaultHtmlRouteProvider",
