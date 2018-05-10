@@ -34,9 +34,6 @@ use Drupal\user\UserInterface;
  *       "default" = "Drupal\Core\Entity\ContentEntityForm",
  *     },
  *     "inline_form" = "Drupal\commerce_pricelist\Form\PriceListItemInlineForm",
- *     "route_provider" = {
- *       "html" = "Drupal\commerce_pricelist\PriceListItemHtmlRouteProvider",
- *     },
  *   },
  *   admin_permission = "administer price_list",
  *   translatable = TRUE,
@@ -392,9 +389,10 @@ class PriceListItem extends CommerceContentEntityBase implements PriceListItemIn
       $fields['purchased_entity']->setSetting('target_type', $purchasable_entity_type);
     }
     else {
-      // This price list item type won't reference a purchasable entity. The field
-      // can't be removed here, or converted to a configurable one, so it's
-      // hidden instead. https://www.drupal.org/node/2346347#comment-10254087.
+      // This price list item type won't reference a purchasable entity.
+      // The field can't be removed here, or converted to a configurable one, so
+      // it's hidden instead.
+      // https://www.drupal.org/node/2346347#comment-10254087.
       $fields['purchased_entity']->setRequired(FALSE);
       $fields['purchased_entity']->setDisplayOptions('form', [
         'type' => 'hidden',

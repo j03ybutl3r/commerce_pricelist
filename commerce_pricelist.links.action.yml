@@ -1,11 +1,11 @@
 entity.price_list.add_form:
-  route_name: 'price_list.add_page'
+  route_name: entity.price_list.add_page
   title: 'Add Price list'
   appears_on:
     - entity.price_list.collection
 
 entity.price_list_type.add_form:
-  route_name: 'entity.price_list_type.add_form'
+  route_name: entity.price_list_type.add_form
   title: 'Add Price list type'
   appears_on:
     - entity.price_list_type.collection

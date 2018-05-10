@@ -2,6 +2,8 @@
 
 namespace Drupal\commerce_pricelist\Entity;
 
+use Drupal\Core\Datetime\DrupalDateTime;
+use Drupal\Core\Entity\EntityPublishedTrait;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\commerce\Entity\CommerceContentEntityBase;
@@ -38,7 +40,8 @@ use Drupal\user\UserInterface;
  *       "delete" = "Drupal\commerce_pricelist\Form\PriceListDeleteForm",
  *     },
  *     "route_provider" = {
- *       "html" = "Drupal\commerce_pricelist\PriceListHtmlRouteProvider",
+ *       "default" = "Drupal\entity\Routing\AdminHtmlRouteProvider",
+ *       "delete-multiple" = "Drupal\entity\Routing\DeleteMultipleRouteProvider",
  *     },
  *     "translation" = "Drupal\content_translation\ContentTranslationHandler"
  *   },
@@ -52,14 +55,16 @@ use Drupal\user\UserInterface;
  *     "label" = "name",
  *     "uuid" = "uuid",
  *     "uid" = "user_id",
- *     "status" = "status",
+ *     "published" = "status",
  *     "langcode" = "langcode",
  *   },
  *   links = {
  *     "canonical" = "/price_list/{price_list}",
+ *     "add-page" = "/price_list/add",
  *     "add-form" = "/price_list/add/{price_list_type}",
  *     "edit-form" = "/price_list/{price_list}/edit",
  *     "delete-form" = "/price_list/{price_list}/delete",
+ *     "delete-multiple-form" = "/admin/commerce/price_list/delete",
  *     "collection" = "/admin/commerce/price_lists",
  *   },
  *   bundle_entity_type = "price_list_type",
@@ -67,17 +72,9 @@ use Drupal\user\UserInterface;
  * )
  */
 class PriceList extends CommerceContentEntityBase implements PriceListInterface {
-  use EntityChangedTrait;
 
-  /**
-   * {@inheritdoc}
-   */
-  public static function preCreate(EntityStorageInterface $storage_controller, array &$values) {
-    parent::preCreate($storage_controller, $values);
-    $values += [
-      'user_id' => \Drupal::currentUser()->id(),
-    ];
-  }
+  use EntityChangedTrait;
+  use EntityPublishedTrait;
 
   /**
    * {@inheritdoc}
@@ -149,15 +146,33 @@ class PriceList extends CommerceContentEntityBase implements PriceListInterface 
   /**
    * {@inheritdoc}
    */
-  public function isPublished() {
-    return (bool) $this->getEntityKey('status');
+  public function getStartDate() {
+    // Can't use the ->date property because it resets the timezone to UTC.
+    return new DrupalDateTime($this->get('start_date')->value);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setPublished($published) {
-    $this->set('status', $published ? NODE_PUBLISHED : NODE_NOT_PUBLISHED);
+  public function setStartDate(DrupalDateTime $start_date) {
+    $this->get('start_date')->value = $start_date->format('Y-m-d');
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getEndDate() {
+    if (!$this->get('end_date')->isEmpty()) {
+      return new DrupalDateTime($this->get('end_date')->value);
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setEndDate(DrupalDateTime $end_date = NULL) {
+    $this->get('end_date')->value = $end_date ? $end_date->format('Y-m-d') : NULL;
     return $this;
   }
 
@@ -181,7 +196,8 @@ class PriceList extends CommerceContentEntityBase implements PriceListInterface 
         continue;
       }
 
-      $price_list_item_storage = \Drupal::service('entity_type.manager')->getStorage('price_list_item');
+      $price_list_item_storage = \Drupal::service('entity_type.manager')
+        ->getStorage('price_list_item');
       $price_list_item_storage->delete($price_list_items);
     }
   }
