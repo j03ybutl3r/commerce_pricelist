@@ -18,6 +18,7 @@ use Drupal\commerce\Entity\CommerceBundleEntityBase;
  *     plural = "@count price list item types",
  *   ),
  *   handlers = {
+ *     "list_builder" = "Drupal\commerce_pricelist\PriceListItemTypeListBuilder",
  *     "form" = {
  *       "add" = "Drupal\commerce_pricelist\Form\PriceListItemTypeForm",
  *       "edit" = "Drupal\commerce_pricelist\Form\PriceListItemTypeForm",
@@ -26,7 +27,6 @@ use Drupal\commerce\Entity\CommerceBundleEntityBase;
  *     "route_provider" = {
  *       "default" = "Drupal\Core\Entity\Routing\DefaultHtmlRouteProvider",
  *     },
- *     "list_builder" = "Drupal\commerce_pricelist\PriceListItemTypeListBuilder",
  *   },
  *   admin_permission = "administer price_list_type",
  *   config_prefix = "price_list_item_type",
