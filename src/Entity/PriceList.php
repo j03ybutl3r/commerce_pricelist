@@ -30,7 +30,7 @@ use Drupal\user\UserInterface;
  *   handlers = {
  *     "view_builder" = "Drupal\Core\Entity\EntityViewBuilder",
  *     "list_builder" = "Drupal\commerce_pricelist\PriceListListBuilder",
- *     "views_data" = "Drupal\commerce_pricelist\PriceListViewsData",
+ *     "views_data" = "Drupal\views\EntityViewsData",
  *     "access" = "Drupal\commerce\EntityAccessControlHandler",
  *     "permission_provider" = "Drupal\commerce\EntityPermissionProvider",
  *     "form" = {
