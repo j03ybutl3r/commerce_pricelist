@@ -37,7 +37,7 @@ use Drupal\user\UserInterface;
  *       "default" = "Drupal\commerce_pricelist\Form\PriceListForm",
  *       "add" = "Drupal\commerce_pricelist\Form\PriceListForm",
  *       "edit" = "Drupal\commerce_pricelist\Form\PriceListForm",
- *       "delete" = "Drupal\commerce_pricelist\Form\PriceListDeleteForm",
+ *       "delete" = "Drupal\Core\Entity\ContentEntityDeleteForm",
  *     },
  *     "route_provider" = {
  *       "default" = "Drupal\entity\Routing\AdminHtmlRouteProvider",
