@@ -266,16 +266,6 @@ class PriceListItem extends CommerceContentEntityBase implements PriceListItemIn
       ->setDescription(t('The parent price list of the Price list item entity.'))
       ->setSetting('target_type', 'price_list')
       ->setRequired(TRUE)
-      ->setDisplayOptions('form', [
-        'type' => 'entity_reference_autocomplete',
-        'weight' => 0,
-        'settings' => [
-          'match_operator' => 'CONTAINS',
-          'size' => '60',
-          'placeholder' => '',
-        ],
-      ])
-      ->setDisplayConfigurable('form', TRUE)
       ->setDisplayConfigurable('view', TRUE);
 
     $fields['purchased_entity'] = BaseFieldDefinition::create('entity_reference')
