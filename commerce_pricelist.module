@@ -7,6 +7,7 @@
 
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Entity\EntityInterface;
 
 /**
  * Implements hook_help().
@@ -70,64 +71,24 @@ function commerce_pricelist_field_widget_form_alter(&$element, FormStateInterfac
 }
 
 /**
- * Implements hook_form_alter().
+ * Implements hook_entity_update().
  */
-function commerce_pricelist_form_alter(&$form, FormStateInterface $form_state, $form_id) {
-  if ($form_id == 'commerce_product_variation_default_edit_form'
-    || $form_id == 'commerce_product_variation_default_add_form'
-    || $form_id == 'commerce_product_bundle_default_edit_form'
-    || $form_id == 'commerce_product_bundle_default_add_form'
-    || $form_id == 'commerce_product_default_edit_form'
-    || $form_id == 'commerce_product_default_add_form'
-  ) {
-    $form['actions']['submit']['#submit'][] = 'update_price_list_item';
-  }
-}
-
-/**
- * Submit update price list item.
- */
-function update_price_list_item(array $form, FormStateInterface $form_state) {
-  $entity = $form_state->getFormObject()->getEntity();
-  $entityId = $entity->id();
-  $entity_type_id = $entity->getEntityType()->id();
-  if ($entity_type_id == 'commerce_product_variation'
-    || $entity_type_id == 'commerce_product_bundle') {
-    // This will be change: https://www.drupal.org/node/2965920.
-    foreach ($entity->field_price_list_item as $item) {
+function commerce_pricelist_entity_update(EntityInterface $entity) {
+  if ($entity instanceof \Drupal\commerce\PurchasableEntityInterface) {
+    /** @var \Drupal\commerce\PurchasableEntityInterface $entity */
+    foreach ($entity->get('field_price_list_item') as $item) {
       $entityAdaper = $item->get('entity')->getTarget();
       if ($entityAdaper){
+        /** @var \Drupal\commerce_pricelist\Entity\PriceListItem $itemEntity */
         $itemEntity = $entityAdaper->getValue();
-        $itemEntity->setPurchasedEntityId($entityId);
-        if (!$itemEntity->getName()) {
+        $itemEntity->setPurchasedEntityId($entity->id());
+        if (!$itemEntity->getName() && $entity->getTitle()) {
           $itemEntity->setName($entity->getTitle());
         }
-        if (!$itemEntity->getPrice()) {
-          if ($entity->getPrice()) {
-            $itemEntity->setPrice($entity->getPrice());
-          }
+        if (!$itemEntity->getPrice() && $entity->getPrice()) {
+          $itemEntity->setPrice($entity->getPrice());
         }
         $itemEntity->save();
-      }
-    }
-  }
-  elseif ($entity_type_id == 'commerce_product') {
-    foreach ($entity->variations as $variation) {
-      $productVariation = $variation->get('entity')->getTarget()->getValue();
-      // This will be change: https://www.drupal.org/node/2965920.
-      foreach ($productVariation->field_price_list_item as $item) {
-        $entityAdaper = $item->get('entity')->getTarget();
-        if ($entityAdaper){
-          $itemEntity = $entityAdaper->getValue();
-          $itemEntity->setPurchasedEntityId($entityId);
-          if (!$itemEntity->getName() && $productVariation->getTitle()) {
-            $itemEntity->setName($productVariation->getTitle());
-          }
-          if (!$itemEntity->getPrice() && $productVariation->getPrice()) {
-            $itemEntity->setPrice($productVariation->getPrice());
-          }
-          $itemEntity->save();
-        }
       }
     }
   }
