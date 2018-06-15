@@ -26,7 +26,6 @@ use Drupal\user\UserInterface;
  *   ),
  *   bundle_label = @Translation("price list item type"),
  *   handlers = {
- *     "storage" = "Drupal\commerce_pricelist\PriceListItemStorage",
  *     "access" = "Drupal\commerce\EmbeddedEntityAccessControlHandler",
  *     "view_builder" = "Drupal\Core\Entity\EntityViewBuilder",
  *     "views_data" = "Drupal\views\EntityViewsData",

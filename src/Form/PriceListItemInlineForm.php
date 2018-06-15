@@ -80,11 +80,6 @@ class PriceListItemInlineForm extends EntityInlineForm {
    */
   public function getTableFields($bundles) {
     $fields = parent::getTableFields($bundles);
-    $fields['price_list_id'] = [
-      'type' => 'field',
-      'label' => t('Price List'),
-      'weight' => 2,
-    ];
     $fields['price'] = [
       'type' => 'field',
       'label' => t('Price'),
@@ -95,15 +90,6 @@ class PriceListItemInlineForm extends EntityInlineForm {
       'label' => t('Quantity'),
       'weight' => 4,
     ];
-
-    $routeName = $this->routeMatch->getRouteName();
-    switch ($routeName) {
-      case 'entity.price_list.add_page':unset($fields['price_list_id']);
-        break;
-
-      case 'entity.price_list.edit_form':unset($fields['price_list_id']);
-        break;
-    }
 
     return $fields;
   }
@@ -120,32 +106,6 @@ class PriceListItemInlineForm extends EntityInlineForm {
     ];
     $entity_form = $this->priceForm($entity_form, $form_state);
     $entity_form['price']['#attributes']['id'] = 'purchased_entity_refresh';
-    $routeName = $this->routeMatch->getRouteName();
-    switch ($routeName) {
-      case 'entity.price_list.add_page':unset($entity_form['price_list_id']);
-        break;
-
-      case 'entity.price_list.edit_form':unset($entity_form['price_list_id']);
-        break;
-
-      case 'entity.commerce_product.add_form':unset($entity_form['purchased_entity']);
-        break;
-
-      case 'entity.commerce_product.edit_form':unset($entity_form['purchased_entity']);
-        break;
-
-      case 'entity.commerce_product_bundle.add_form':unset($entity_form['purchased_entity']);
-        break;
-
-      case 'entity.commerce_product_bundle.edit_form':unset($entity_form['purchased_entity']);
-        break;
-
-      case 'entity.commerce_product_variation.add_form':unset($entity_form['purchased_entity']);
-        break;
-
-      case 'entity.commerce_product_variation.edit_form':unset($entity_form['purchased_entity']);
-        break;
-    }
     return $entity_form;
   }
 

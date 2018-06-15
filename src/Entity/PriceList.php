@@ -179,10 +179,35 @@ class PriceList extends CommerceContentEntityBase implements PriceListInterface 
   /**
    * {@inheritdoc}
    */
+  public function getItemsIds() {
+    $price_list_item_ids = [];
+    foreach ($this->get('field_price_list_item') as $field_item) {
+      $price_list_item_ids[] = $field_item->target_id;
+    }
+    return $price_list_item_ids;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function getItems() {
-    // TODO: Implement getItems() method.
-    $storage = $this->entityTypeManager()->getStorage('price_list_item');
-    return $storage->loadMultipleByPriceList($this->id());
+    return $this->getTranslatedReferencedEntities('field_price_list_item');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function postSave(EntityStorageInterface $storage, $update = TRUE) {
+    parent::postSave($storage, $update);
+
+    // Ensure there's a back-reference on each price list item.
+    foreach ($this->field_price_list_item as $item) {
+      $price_list_item = $item->entity;
+      if ($price_list_item->price_list_id->isEmpty()) {
+        $price_list_item->price_list_id = $this->id();
+        $price_list_item->save();
+      }
+    }
   }
 
   /**
@@ -190,10 +215,14 @@ class PriceList extends CommerceContentEntityBase implements PriceListInterface 
    */
   public static function postDelete(EntityStorageInterface $storage, array $entities) {
     // Delete the price list item of a deleted price list.
+    $price_list_items = [];
+
     foreach ($entities as $entity) {
-      $price_list_items = $entity->getItems();
-      if (empty($price_list_items)) {
+      if (empty($entity->field_price_list_item)) {
         continue;
+      }
+      foreach ($entity->field_price_list_item as $item) {
+        $price_list_items[$item->target_id] = $item->entity;
       }
 
       $price_list_item_storage = \Drupal::service('entity_type.manager')

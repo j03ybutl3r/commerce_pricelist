@@ -190,7 +190,6 @@ class PriceListForm extends ContentEntityForm {
     foreach ($entity->field_price_list_item as $item) {
       $itemEntity = $item->get('entity')->getTarget()->getValue();
       $itemEntity->setWeight($item->getValue()['weight']);
-      $itemEntity->setPriceListId($this->entity->id());
       $itemEntity->save();
     }
 
