@@ -177,11 +177,6 @@ class PriceListItemInlineForm extends EntityInlineForm {
     $product   = $entity->getPurchasedEntity();
     $priceList = $entity->getPriceList();
 
-    // Set name if name is null.
-    if ($product && !$entity->getName()) {
-      $entity->setName($product->getTitle());
-    }
-
     // Set quantity if quantity is null.
     if (!$entity->getQuantity()) {
       $entity->setQuantity(1);
@@ -227,7 +222,7 @@ class PriceListItemInlineForm extends EntityInlineForm {
    * {@inheritdoc}
    */
   public function getEntityLabel(EntityInterface $entity) {
-    return $entity->label();
+    return is_null($entity->label())?$entity->getPurchasedEntity()->label():$entity->label();
   }
 
 }
