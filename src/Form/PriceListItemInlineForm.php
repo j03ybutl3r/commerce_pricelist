@@ -119,10 +119,10 @@ class PriceListItemInlineForm extends EntityInlineForm {
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    */
   public function priceForm(array $entity_form, FormStateInterface $form_state) {
+    /** @var \Drupal\commerce_pricelist\Entity\PriceListItem $entity */
     $entity = $entity_form['#entity'];
     $entity_form['price']['#disabled'] = FALSE;
     $target_id = NULL;
-    $target_type = $entity_form['purchased_entity']['widget'][0]['target_id']['#target_type'];
     if ($entity->hasPurchasedEntity()) {
       $target_id = $entity->getPurchasedEntityId();
     }
@@ -134,7 +134,7 @@ class PriceListItemInlineForm extends EntityInlineForm {
       }
     }
     if ($target_id) {
-      $purchased_entity = $this->entityTypeManager->getStorage($target_type)->load($target_id);
+      $purchased_entity = $entity->getPurchasedEntity();
       $price = $purchased_entity->getPrice();
       if (!$price) {
         $entity_form['price']['#disabled'] = TRUE;
