@@ -77,6 +77,13 @@ class PriceListItemType extends CommerceBundleEntityBase implements PriceListIte
   /**
    * {@inheritdoc}
    */
+  public function getPurchasableEntityType() {
+    return $this->entityTypeManager()->getDefinition($this->purchasableEntityType);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function setPurchasableEntityTypeId($purchasable_entity_type_id) {
     $this->purchasableEntityType = $purchasable_entity_type_id;
     return $this;

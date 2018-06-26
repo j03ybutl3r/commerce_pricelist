@@ -21,6 +21,14 @@ interface PriceListItemTypeInterface extends CommerceBundleEntityInterface {
   public function getPurchasableEntityTypeId();
 
   /**
+   * Gets the price list item type's purchasable entity type.
+   *
+   * @return \Drupal\Core\Entity\EntityTypeInterface
+   *   The purchasable entity type definition.
+   */
+  public function getPurchasableEntityType();
+
+  /**
    * Sets the price list item type's purchasable entity type ID.
    *
    * @param string $purchasable_entity_type_id

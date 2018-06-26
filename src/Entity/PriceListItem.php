@@ -371,11 +371,14 @@ class PriceListItem extends CommerceContentEntityBase implements PriceListItemIn
   public static function bundleFieldDefinitions(EntityTypeInterface $entity_type, $bundle, array $base_field_definitions) {
     /** @var \Drupal\commerce_pricelist\Entity\PriceListItemTypeInterface $price_list_item_type */
     $price_list_item_type = PriceListItemType::load($bundle);
-    $purchasable_entity_type = $price_list_item_type->getPurchasableEntityTypeId();
+    $purchasable_entity_type_id = $price_list_item_type->getPurchasableEntityTypeId();
+    /** @var \Drupal\Core\StringTranslation\TranslatableMarkup $purchasable_entity_type_label */
+    $purchasable_entity_type_label = $price_list_item_type->getPurchasableEntityType()->getLabel();
     $fields = [];
     $fields['purchased_entity'] = clone $base_field_definitions['purchased_entity'];
-    if ($purchasable_entity_type) {
-      $fields['purchased_entity']->setSetting('target_type', $purchasable_entity_type);
+    if ($purchasable_entity_type_id) {
+      $fields['purchased_entity']->setSetting('target_type', $purchasable_entity_type_id);
+      $fields['purchased_entity']->setLabel($purchasable_entity_type_label);
     }
     else {
       // This price list item type won't reference a purchasable entity.
