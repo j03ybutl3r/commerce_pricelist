@@ -8,6 +8,7 @@
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\commerce\PurchasableEntityInterface;
 
 /**
  * Implements hook_help().
@@ -74,21 +75,23 @@ function commerce_pricelist_field_widget_form_alter(&$element, FormStateInterfac
  * Implements hook_entity_update().
  */
 function commerce_pricelist_entity_update(EntityInterface $entity) {
-  if ($entity instanceof \Drupal\commerce\PurchasableEntityInterface) {
-    /** @var \Drupal\commerce\PurchasableEntityInterface $entity */
-    foreach ($entity->get('field_price_list_item') as $item) {
-      $entityAdaper = $item->get('entity')->getTarget();
-      if ($entityAdaper){
-        /** @var \Drupal\commerce_pricelist\Entity\PriceListItem $itemEntity */
-        $itemEntity = $entityAdaper->getValue();
-        $itemEntity->setPurchasedEntityId($entity->id());
-        if (!$itemEntity->getName() && $entity->getTitle()) {
-          $itemEntity->setName($entity->getTitle());
+  if ($entity instanceof PurchasableEntityInterface) {
+    if ($entity->hasField('field_price_list_item')) {
+      /** @var \Drupal\commerce\PurchasableEntityInterface $entity */
+      foreach ($entity->get('field_price_list_item') as $item) {
+        $entityAdaper = $item->get('entity')->getTarget();
+        if ($entityAdaper) {
+          /** @var \Drupal\commerce_pricelist\Entity\PriceListItem $itemEntity */
+          $itemEntity = $entityAdaper->getValue();
+          $itemEntity->setPurchasedEntityId($entity->id());
+          if (!$itemEntity->getName() && $entity->getTitle()) {
+            $itemEntity->setName($entity->getTitle());
+          }
+          if (!$itemEntity->getPrice() && $entity->getPrice()) {
+            $itemEntity->setPrice($entity->getPrice());
+          }
+          $itemEntity->save();
         }
-        if (!$itemEntity->getPrice() && $entity->getPrice()) {
-          $itemEntity->setPrice($entity->getPrice());
-        }
-        $itemEntity->save();
       }
     }
   }
