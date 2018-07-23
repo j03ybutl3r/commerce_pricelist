@@ -1,17 +1,11 @@
-entity.price_list.add_form:
-  route_name: entity.price_list.add_page
-  title: 'Add Price list'
+entity.commerce_pricelist.add_page:
+  route_name: entity.commerce_pricelist.add_page
+  title: 'Add price list'
   appears_on:
-    - entity.price_list.collection
+    - entity.commerce_pricelist.collection
 
-entity.price_list_type.add_form:
-  route_name: entity.price_list_type.add_form
-  title: 'Add Price list type'
+entity.commerce_pricelist_item.add_form:
+  route_name: entity.commerce_pricelist_item.add_form
+  title: 'Add price'
   appears_on:
-    - entity.price_list_type.collection
-
-entity.price_list_item_type.add_form:
-  route_name: entity.price_list_item_type.add_form
-  title: 'Add Price list item type'
-  appears_on:
-    - entity.price_list_item_type.collection
+    - entity.commerce_pricelist_item.collection

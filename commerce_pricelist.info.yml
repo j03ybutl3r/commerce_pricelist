@@ -1,10 +1,9 @@
-name: Commerce Pricelist
+name: 'Commerce Pricelist'
 type: module
-description: Set product prices through price lists
+description: 'Allows defining prices for specific stores, customers, quantities using price lists.'
 core: 8.x
-package: Commerce (contrib)
+package: 'Commerce (contrib)'
 dependencies:
-  - commerce
-  - commerce_store
-  - commerce_price
-  - commerce_product
+  - commerce:commerce
+  - commerce:commerce_store
+  - commerce:commerce_price

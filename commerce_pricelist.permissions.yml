@@ -1,9 +1,3 @@
-administer price list entities:
-  title: 'Administer Price list entities'
-  description: 'Allow to access the administration form to configure Price list entities.'
-  restrict access: true
-
-administer price list item entities:
-  title: 'Administer Price list item entities'
-  description: 'Allow to access the administration form to configure Price list item entities.'
-  restrict access: true
+administer commerce_pricelist:
+  title: 'Administer price lists'
+  'restrict access': TRUE

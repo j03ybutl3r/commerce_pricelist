@@ -5,7 +5,7 @@ namespace Drupal\Tests\commerce_pricelist\Kernel;
 use Drupal\Tests\commerce\Kernel\CommerceKernelTestBase;
 
 /**
- * Provides a base class for Commerce kernel tests.
+ * Provides a base class for price list kernel tests.
  */
 abstract class PriceListKernelTestBase extends CommerceKernelTestBase {
 
@@ -35,11 +35,12 @@ abstract class PriceListKernelTestBase extends CommerceKernelTestBase {
    */
   protected function setUp() {
     parent::setUp();
+
     $this->installEntitySchema('commerce_product_variation');
     $this->installEntitySchema('commerce_product');
-    $this->installEntitySchema('price_list_item');
-    $this->installEntitySchema('price_list');
-    $this->installConfig(['commerce_product', 'commerce_pricelist']);
+    $this->installEntitySchema('commerce_pricelist_item');
+    $this->installEntitySchema('commerce_pricelist');
+    $this->installConfig(['commerce_product']);
 
     $user = $this->createUser();
     $this->user = $this->reloadEntity($user);

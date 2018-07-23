@@ -2,53 +2,57 @@
 
 namespace Drupal\commerce_pricelist\Entity;
 
+use Drupal\commerce\PurchasableEntityInterface;
 use Drupal\commerce_price\Price;
 use Drupal\commerce\Entity\CommerceContentEntityBase;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Entity\EntityChangedTrait;
 use Drupal\Core\Entity\EntityTypeInterface;
-use Drupal\user\UserInterface;
 
 /**
  * Defines the price list item entity.
  *
- * @ingroup commerce_pricelist
+ * Called a "price" in the UI for UX reasons.
  *
  * @ContentEntityType(
- *   id = "price_list_item",
+ *   id = "commerce_pricelist_item",
  *   label = @Translation("Price list item"),
- *   label_collection = @Translation("Price list items"),
- *   label_singular = @Translation("price list item"),
- *   label_plural = @Translation("price list items"),
+ *   label_collection = @Translation("Prices"),
+ *   label_singular = @Translation("price"),
+ *   label_plural = @Translation("prices"),
  *   label_count = @PluralTranslation(
- *     singular = "@count price list item",
- *     plural = "@count price list items",
+ *     singular = "@count price",
+ *     plural = "@count prices",
  *   ),
- *   bundle_label = @Translation("price list item type"),
  *   handlers = {
- *     "access" = "Drupal\commerce\EmbeddedEntityAccessControlHandler",
+ *     "list_builder" = "Drupal\commerce_pricelist\PriceListItemListBuilder",
+ *     "storage" = "Drupal\commerce_pricelist\PriceListItemStorage",
  *     "view_builder" = "Drupal\Core\Entity\EntityViewBuilder",
  *     "views_data" = "Drupal\views\EntityViewsData",
  *     "form" = {
- *       "default" = "Drupal\Core\Entity\ContentEntityForm",
+ *       "add" = "Drupal\commerce_pricelist\Form\PriceListItemForm",
+ *       "edit" = "Drupal\commerce_pricelist\Form\PriceListItemForm",
+ *       "delete" = "Drupal\commerce_pricelist\Form\PriceListItemDeleteForm",
  *     },
- *     "inline_form" = "Drupal\commerce_pricelist\Form\PriceListItemInlineForm",
+ *     "route_provider" = {
+ *       "default" = "Drupal\commerce_pricelist\PriceListItemRouteProvider",
+ *     },
  *   },
- *   admin_permission = "administer price_list",
- *   translatable = TRUE,
- *   content_translation_ui_skip = TRUE,
- *   base_table = "price_list_item",
- *   data_table = "price_list_item_field_data",
+ *   admin_permission = "administer commerce_pricelist",
+ *   base_table = "commerce_pricelist_item",
+ *   data_table = "commerce_pricelist_item_field_data",
  *   entity_keys = {
  *     "id" = "id",
  *     "bundle" = "type",
- *     "label" = "name",
  *     "uuid" = "uuid",
  *     "status" = "status",
- *     "langcode" = "langcode",
  *   },
- *   bundle_entity_type = "price_list_item_type",
- *   field_ui_base_route = "entity.price_list_item_type.edit_form"
+ *   links = {
+ *     "add-form" = "/price-list/{commerce_pricelist}/prices/add",
+ *     "edit-form" = "/price-list/{commerce_pricelist}/prices/{commerce_pricelist_item}/edit",
+ *     "delete-form" = "/price-list/{commerce_pricelist}/prices/{commerce_pricelist_item}/delete",
+ *     "collection" = "/price-list/{commerce_pricelist}/prices",
+ *   },
  * )
  */
 class PriceListItem extends CommerceContentEntityBase implements PriceListItemInterface {
@@ -58,15 +62,32 @@ class PriceListItem extends CommerceContentEntityBase implements PriceListItemIn
   /**
    * {@inheritdoc}
    */
-  public function getPriceList() {
-    return $this->get('price_list_id')->entity;
+  protected function urlRouteParameters($rel) {
+    $uri_route_parameters = parent::urlRouteParameters($rel);
+    $uri_route_parameters['commerce_pricelist'] = $this->getPriceListId();
+    return $uri_route_parameters;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setPriceList(PriceListInterface $price_list) {
-    return $this->set('price_list_id', $price_list);
+  public function label() {
+    if ($this->isNew()) {
+      return '';
+    }
+    $purchasable_entity_label = $this->getPurchasableEntity()->label();
+    $currency_formatter = \Drupal::service('commerce_price.currency_formatter');
+    $price = $this->getPrice();
+    $formatted_price = $currency_formatter->format($price->getNumber(), $price->getCurrencyCode());
+
+    return sprintf('%s: %s', $purchasable_entity_label, $formatted_price);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getPriceList() {
+    return $this->get('price_list_id')->entity;
   }
 
   /**
@@ -79,23 +100,29 @@ class PriceListItem extends CommerceContentEntityBase implements PriceListItemIn
   /**
    * {@inheritdoc}
    */
-  public function setPriceListId($price_list_id) {
-    return $this->set('price_list_id', $price_list_id);
+  public function getPurchasableEntity() {
+    return $this->getTranslatedReferencedEntity('purchasable_entity');
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getName() {
-    return $this->get('name')->value;
+  public function setPurchasableEntity(PurchasableEntityInterface $purchasable_entity) {
+    return $this->set('purchasable_entity', $purchasable_entity);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setName($name) {
-    $this->set('name', $name);
-    return $this;
+  public function getPurchasableEntityId() {
+    return $this->get('purchasable_entity')->target_id;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setPurchasableEntityId($purchasable_entity_id) {
+    return $this->set('purchasable_entity', $purchasable_entity_id);
   }
 
   /**
@@ -109,45 +136,8 @@ class PriceListItem extends CommerceContentEntityBase implements PriceListItemIn
    * {@inheritdoc}
    */
   public function setQuantity($quantity) {
-    $this->set('quantity', $quantity);
+    $this->set('quantity', (string) $quantity);
     return $this;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getCreatedTime() {
-    return $this->get('created')->value;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function setCreatedTime($timestamp) {
-    $this->set('created', $timestamp);
-    return $this;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getWeight() {
-    return $this->get('weight')->value;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function setWeight($weight) {
-    $this->set('weight', $weight);
-    return $this;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function setPrice(Price $price) {
-    return $this->set('price', $price);
   }
 
   /**
@@ -162,81 +152,22 @@ class PriceListItem extends CommerceContentEntityBase implements PriceListItemIn
   /**
    * {@inheritdoc}
    */
-  public function hasPurchasedEntity() {
-    return !$this->get('purchased_entity')->isEmpty();
+  public function setPrice(Price $price) {
+    return $this->set('price', $price);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getPurchasedEntity() {
-    return $this->getTranslatedReferencedEntity('purchased_entity');
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getPurchasedEntityId() {
-    return $this->get('purchased_entity')->target_id;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function setPurchasedEntityId($purchased_entity_id) {
-    return $this->set('purchased_entity', $purchased_entity_id);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getOwner() {
-    return $this->get('uid')->entity;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function setOwner(UserInterface $account) {
-    $this->set('uid', $account->id());
-    return $this;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getOwnerId() {
-    return $this->get('uid')->target_id;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function setOwnerId($uid) {
-    $this->set('uid', $uid);
-    return $this;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function isActive() {
+  public function isEnabled() {
     return (bool) $this->getEntityKey('status');
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setActive() {
-    $this->set('status', (bool) TRUE);
-    return $this;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function setInactive() {
-    $this->set('status', (bool) FALSE);
+  public function setEnabled($enabled) {
+    $this->set('status', (bool) $enabled);
     return $this;
   }
 
@@ -246,30 +177,15 @@ class PriceListItem extends CommerceContentEntityBase implements PriceListItemIn
   public static function baseFieldDefinitions(EntityTypeInterface $entity_type) {
     $fields = parent::baseFieldDefinitions($entity_type);
 
-    $fields['uid'] = BaseFieldDefinition::create('entity_reference')
-      ->setLabel(t('Author'))
-      ->setDescription(t('The price list item author.'))
-      ->setSetting('target_type', 'user')
-      ->setSetting('handler', 'default')
-      ->setDefaultValueCallback('Drupal\commerce_pricelist\Entity\PriceListItem::getCurrentUserId')
-      ->setTranslatable(TRUE)
-      ->setDisplayConfigurable('form', TRUE);
-
-    $fields['weight'] = BaseFieldDefinition::create('integer')
-      ->setLabel(t('Weight'))
-      ->setDescription(t('The Weight of the Price list item entity.'))
-      ->setDefaultValue(0);
-
     $fields['price_list_id'] = BaseFieldDefinition::create('entity_reference')
       ->setLabel(t('Price list'))
-      ->setDescription(t('The parent price list of the Price list item entity.'))
-      ->setSetting('target_type', 'price_list')
-      ->setRequired(TRUE)
-      ->setDisplayConfigurable('view', TRUE);
+      ->setDescription(t('The parent price list.'))
+      ->setSetting('target_type', 'commerce_pricelist')
+      ->setReadOnly(TRUE);
 
-    $fields['purchased_entity'] = BaseFieldDefinition::create('entity_reference')
-      ->setLabel(t('Purchased entity'))
-      ->setDescription(t('The purchased entity of the price list item.'))
+    $fields['purchasable_entity'] = BaseFieldDefinition::create('entity_reference')
+      ->setLabel(t('Purchasable entity'))
+      ->setDescription(t('The purchasable entity.'))
       ->setRequired(TRUE)
       ->setDisplayOptions('form', [
         'type' => 'entity_reference_autocomplete',
@@ -279,87 +195,45 @@ class PriceListItem extends CommerceContentEntityBase implements PriceListItemIn
           'size' => '60',
           'placeholder' => '',
         ],
-      ])
-      ->setDisplayConfigurable('form', TRUE)
-      ->setDisplayConfigurable('view', TRUE);
+      ]);
 
-    $fields['name'] = BaseFieldDefinition::create('string')
-      ->setLabel(t('Name'))
-      ->setDescription(t('Optional label for this price list item.'))
-      ->setSettings([
-        'max_length' => 50,
-        'text_processing' => 0,
-      ])
-      ->setDefaultValue('')
-      ->setDisplayOptions('view', [
-        'label' => 'above',
-        'type' => 'string',
-        'weight' => 2,
-      ])
-      ->setDisplayOptions('form', [
-        'type' => 'string_textfield',
-        'weight' => 2,
-      ])
-      ->setTranslatable(TRUE)
-      ->setDisplayConfigurable('form', TRUE)
-      ->setDisplayConfigurable('view', TRUE);
-
-    $fields['quantity'] = BaseFieldDefinition::create('integer')
+    $fields['quantity'] = BaseFieldDefinition::create('decimal')
       ->setLabel(t('Quantity'))
-      ->setDescription(t('The product quantity number of the Price list item entity.'))
-      ->setSettings([
-        'max_length' => 50,
-        'text_processing' => 0,
-      ])
-      ->setDefaultValue('')
-      ->setDisplayOptions('view', [
-        'label' => 'above',
-        'type' => 'integer',
-        'weight' => 3,
-      ])
+      ->setDescription(t('The quantity tier.'))
+      ->setSetting('unsigned', TRUE)
+      ->setSetting('min', 0)
+      ->setDefaultValue(1)
       ->setDisplayOptions('form', [
-        'type' => 'integer',
-        'weight' => 3,
-      ])
-      ->setDisplayConfigurable('form', TRUE)
-      ->setDisplayConfigurable('view', TRUE);
+        'type' => 'commerce_quantity',
+      ]);
 
     $fields['price'] = BaseFieldDefinition::create('commerce_price')
       ->setLabel(t('Price'))
-      ->setDescription(t('The price of the Price list item entity.'))
+      ->setDescription(t('The price.'))
       ->setDisplayOptions('view', [
         'label' => 'above',
         'type' => 'commerce_price_default',
-        'weight' => 4,
       ])
       ->setDisplayOptions('form', [
         'type' => 'commerce_price_default',
-        'weight' => 4,
-      ])
-      ->setDisplayConfigurable('form', TRUE)
-      ->setDisplayConfigurable('view', TRUE);
+      ]);
 
     $fields['status'] = BaseFieldDefinition::create('boolean')
-      ->setLabel(t('Active'))
-      ->setDescription(t('Whether the price list item is active.'))
+      ->setLabel(t('Status'))
+      ->setDescription(t('Whether the price list item is enabled.'))
       ->setDefaultValue(TRUE)
       ->setRequired(TRUE)
-      ->setTranslatable(TRUE)
-      ->setDisplayOptions('form', [
-        'type' => 'boolean_checkbox',
-        'weight' => 99,
+      ->setSettings([
+        'on_label' => t('Enabled'),
+        'off_label' => t('Disabled'),
       ])
-      ->setDisplayConfigurable('form', TRUE);
-
-    $fields['created'] = BaseFieldDefinition::create('created')
-      ->setLabel(t('Created'))
-      ->setDescription(t('The time when the price list item was created.'))
-      ->setTranslatable(TRUE)
-      ->setDisplayConfigurable('form', TRUE);
+      ->setDisplayOptions('form', [
+        'type' => 'options_buttons',
+      ]);
 
     $fields['changed'] = BaseFieldDefinition::create('changed')
       ->setLabel(t('Changed'))
-      ->setDescription(t('The time that the entity was last edited.'))
+      ->setDescription(t('The time when the price list item was last edited.'))
       ->setTranslatable(TRUE);
 
     return $fields;
@@ -369,44 +243,13 @@ class PriceListItem extends CommerceContentEntityBase implements PriceListItemIn
    * {@inheritdoc}
    */
   public static function bundleFieldDefinitions(EntityTypeInterface $entity_type, $bundle, array $base_field_definitions) {
-    /** @var \Drupal\commerce_pricelist\Entity\PriceListItemTypeInterface $price_list_item_type */
-    $price_list_item_type = PriceListItemType::load($bundle);
-    $purchasable_entity_type_id = $price_list_item_type->getPurchasableEntityTypeId();
-    /** @var \Drupal\Core\StringTranslation\TranslatableMarkup $purchasable_entity_type_label */
-    $purchasable_entity_type_label = $price_list_item_type->getPurchasableEntityType()->getLabel();
+    $purchasable_entity_type = \Drupal::entityTypeManager()->getDefinition($bundle);
     $fields = [];
-    $fields['purchased_entity'] = clone $base_field_definitions['purchased_entity'];
-    if ($purchasable_entity_type_id) {
-      $fields['purchased_entity']->setSetting('target_type', $purchasable_entity_type_id);
-      $fields['purchased_entity']->setLabel($purchasable_entity_type_label);
-    }
-    else {
-      // This price list item type won't reference a purchasable entity.
-      // The field can't be removed here, or converted to a configurable one, so
-      // it's hidden instead.
-      // https://www.drupal.org/node/2346347#comment-10254087.
-      $fields['purchased_entity']->setRequired(FALSE);
-      $fields['purchased_entity']->setDisplayOptions('form', [
-        'type' => 'hidden',
-      ]);
-      $fields['purchased_entity']->setDisplayConfigurable('form', FALSE);
-      $fields['purchased_entity']->setDisplayConfigurable('view', FALSE);
-      $fields['purchased_entity']->setReadOnly(TRUE);
-    }
+    $fields['purchasable_entity'] = clone $base_field_definitions['purchasable_entity'];
+    $fields['purchasable_entity']->setSetting('target_type', $purchasable_entity_type->id());
+    $fields['purchasable_entity']->setLabel($purchasable_entity_type->getLabel());
 
     return $fields;
-  }
-
-  /**
-   * Default value callback for 'uid' base field definition.
-   *
-   * @see ::baseFieldDefinitions()
-   *
-   * @return array
-   *   An array of default values.
-   */
-  public static function getCurrentUserId() {
-    return [\Drupal::currentUser()->id()];
   }
 
 }

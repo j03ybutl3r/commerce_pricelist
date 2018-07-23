@@ -8,20 +8,65 @@
 use Drupal\commerce\PurchasableEntityInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\Core\Render\Element;
 
 /**
  * Implements hook_help().
  */
 function commerce_pricelist_help($route_name, RouteMatchInterface $route_match) {
   switch ($route_name) {
-    // Main module help for the commerce_pricelist module.
     case 'help.page.commerce_pricelist':
       $output = '';
       $output .= '<h3>' . t('About') . '</h3>';
-      $output .= '<p>' . t('Set product prices through price lists') . '</p>';
+      $output .= '<p>' . t('Allows defining prices for specific stores, customers, quantities using price lists.') . '</p>';
       return $output;
+  }
+}
 
-    default:
+/**
+ * Implements hook_entity_bundle_info().
+ */
+function commerce_pricelist_entity_bundle_info() {
+  $entity_types = \Drupal::entityTypeManager()->getDefinitions();
+  $purchasable_entity_types = array_filter($entity_types, function (EntityTypeInterface $entity_type) {
+    return $entity_type->entityClassImplements(PurchasableEntityInterface::class);
+  });
+
+  $bundles = [];
+  foreach ($purchasable_entity_types as $entity_type) {
+    $bundles['commerce_pricelist'][$entity_type->id()] = [
+      'label' => $entity_type->getLabel(),
+      'description' => t('Create a price list for @label', ['@label' => $entity_type->getLowercaseLabel()]),
+      'translatable' => FALSE,
+      'provider' => 'commerce_pricelist',
+    ];
+    $bundles['commerce_pricelist_item'][$entity_type->id()] = [
+      'label' => $entity_type->getLabel(),
+      'translatable' => FALSE,
+      'provider' => 'commerce_pricelist',
+    ];
+  }
+
+  return $bundles;
+}
+
+/**
+ * Implements hook_entity_delete().
+ */
+function commerce_pricelist_entity_delete(EntityInterface $entity) {
+  if ($entity->getEntityType()->entityClassImplements(PurchasableEntityInterface::class)) {
+    // A purchasable entity was deleted. Delete all of its price list items.
+    $price_list_item_storage = \Drupal::entityTypeManager()->getStorage('commerce_pricelist_item');
+    $query = $price_list_item_storage->getQuery();
+    $query->condition('type', $entity->getEntityTypeId());
+    $query->condition('purchasable_entity', $entity->id());
+    $result = $query->execute();
+    if (!empty($result)) {
+      // @todo This can crash due to there potentially being thousands of items.
+      $price_list_items = $price_list_item_storage->loadMultiple($result);
+      $price_list_item_storage->delete($price_list_items);
+    }
   }
 }
 
@@ -29,61 +74,37 @@ function commerce_pricelist_help($route_name, RouteMatchInterface $route_match) 
  * Implements hook_theme().
  */
 function commerce_pricelist_theme() {
-  $theme = [];
-  $theme['price_list'] = [
-    'render element' => 'elements',
-    'file' => 'price_list.page.inc',
-    'template' => 'price_list',
+  return [
+    'commerce_pricelist' => [
+      'render element' => 'elements',
+    ],
   ];
-  $theme['price_list_content_add_list'] = [
-    'render element' => 'content',
-    'variables' => ['content' => NULL],
-    'file' => 'price_list.page.inc',
-  ];
-  $theme['price_list_item'] = [
-    'render element' => 'elements',
-    'file' => 'price_list_item.page.inc',
-    'template' => 'price_list_item',
-  ];
-  return $theme;
-}
-
-/**
- * Implements hook_entity_update().
- */
-function commerce_pricelist_entity_update(EntityInterface $entity) {
-  if ($entity instanceof PurchasableEntityInterface) {
-    /** @var \Drupal\commerce\PurchasableEntityInterface $entity */
-    foreach ($entity->get('field_price_list_item') as $item) {
-      $entityAdaper = $item->get('entity')->getTarget();
-      if ($entityAdaper) {
-        /** @var \Drupal\commerce_pricelist\Entity\PriceListItem $itemEntity */
-        $itemEntity = $entityAdaper->getValue();
-        $itemEntity->setPurchasedEntityId($entity->id());
-        if (!$itemEntity->getName() && $entity->getTitle()) {
-          $itemEntity->setName($entity->getTitle());
-        }
-        if (!$itemEntity->getPrice() && $entity->getPrice()) {
-          $itemEntity->setPrice($entity->getPrice());
-        }
-        $itemEntity->save();
-      }
-    }
-  }
 }
 
 /**
  * Implements hook_theme_suggestions_HOOK().
  */
-function commerce_pricelist_theme_suggestions_price_list(array $variables) {
-  $suggestions = [];
-  $entity = $variables['elements']['#price_list'];
-  $sanitized_view_mode = strtr($variables['elements']['#view_mode'], '.', '_');
+function commerce_pricelist_theme_suggestions_commerce_pricelist(array $variables) {
+  return _commerce_entity_theme_suggestions('commerce_pricelist', $variables);
+}
 
-  $suggestions[] = 'price_list__' . $sanitized_view_mode;
-  $suggestions[] = 'price_list__' . $entity->bundle();
-  $suggestions[] = 'price_list__' . $entity->bundle() . '__' . $sanitized_view_mode;
-  $suggestions[] = 'price_list__' . $entity->id();
-  $suggestions[] = 'price_list__' . $entity->id() . '__' . $sanitized_view_mode;
-  return $suggestions;
+/**
+ * Prepares variables for price list templates.
+ *
+ * Default template: commerce-price-list.html.twig.
+ *
+ * @param array $variables
+ *   An associative array containing:
+ *   - elements: An associative array containing rendered fields.
+ *   - attributes: HTML attributes for the containing element.
+ */
+function template_preprocess_commerce_pricelist(array &$variables) {
+  /** @var Drupal\commerce_pricelist\Entity\PriceListInterface $price_list */
+  $price_list = $variables['elements']['#commerce_pricelist'];
+
+  $variables['price_list_entity'] = $price_list;
+  $variables['price_list'] = [];
+  foreach (Element::children($variables['elements']) as $key) {
+    $variables['price_list'][$key] = $variables['elements'][$key];
+  }
 }

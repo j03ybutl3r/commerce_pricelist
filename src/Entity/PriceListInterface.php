@@ -2,32 +2,21 @@
 
 namespace Drupal\commerce_pricelist\Entity;
 
+use Drupal\commerce_store\Entity\EntityStoresInterface;
 use Drupal\Core\Datetime\DrupalDateTime;
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityChangedInterface;
-use Drupal\Core\Entity\EntityPublishedInterface;
-use Drupal\user\EntityOwnerInterface;
 
 /**
- * Provides an interface for defining price list entities.
- *
- * @ingroup commerce_pricelist
+ * Defines the interface for price lists.
  */
-interface PriceListInterface extends ContentEntityInterface, EntityChangedInterface, EntityOwnerInterface, EntityPublishedInterface {
-
-  /**
-   * Gets the price list type.
-   *
-   * @return string
-   *   The price list type.
-   */
-  public function getType();
+interface PriceListInterface extends ContentEntityInterface, EntityChangedInterface, EntityStoresInterface {
 
   /**
    * Gets the price list name.
    *
    * @return string
-   *   Name of the price list.
+   *   The price list name.
    */
   public function getName();
 
@@ -37,37 +26,9 @@ interface PriceListInterface extends ContentEntityInterface, EntityChangedInterf
    * @param string $name
    *   The price list name.
    *
-   * @return \Drupal\commerce_pricelist\Entity\PriceListInterface
-   *   The called price list entity.
+   * @return $this
    */
   public function setName($name);
-
-  /**
-   * Gets the price list creation timestamp.
-   *
-   * @return int
-   *   Creation timestamp of the price list.
-   */
-  public function getCreatedTime();
-
-  /**
-   * Sets the price list creation timestamp.
-   *
-   * @param int $timestamp
-   *   The price list creation timestamp.
-   *
-   * @return \Drupal\commerce_pricelist\Entity\PriceListInterface
-   *   The called price list entity.
-   */
-  public function setCreatedTime($timestamp);
-
-  /**
-   * Gets the price list's item list.
-   *
-   * @return \Drupal\commerce_pricelist\Entity\PriceListItemInterface[]
-   *   The price list items.
-   */
-  public function getItems();
 
   /**
    * Gets the price list start date.
@@ -94,5 +55,63 @@ interface PriceListInterface extends ContentEntityInterface, EntityChangedInterf
    *   The price list end date, or NULL
    */
   public function getEndDate();
+
+  /**
+   * Sets the price list end date.
+   *
+   * @param \Drupal\Core\Datetime\DrupalDateTime $end_date
+   *   The price list end date.
+   *
+   * @return $this
+   */
+  public function setEndDate(DrupalDateTime $end_date);
+
+  /**
+   * Gets the weight.
+   *
+   * @return int
+   *   The weight.
+   */
+  public function getWeight();
+
+  /**
+   * Sets the weight.
+   *
+   * @param int $weight
+   *   The weight.
+   *
+   * @return $this
+   */
+  public function setWeight($weight);
+
+  /**
+   * Get whether the price list is enabled.
+   *
+   * @return bool
+   *   TRUE if the price list is enabled, FALSE otherwise.
+   */
+  public function isEnabled();
+
+  /**
+   * Sets whether the price list is enabled.
+   *
+   * @param bool $enabled
+   *   Whether the price list is enabled.
+   *
+   * @return $this
+   */
+  public function setEnabled($enabled);
+
+  /**
+   * Gets the price list item IDs.
+   *
+   * No matching getItems() method is provided because there can potentially
+   * be thousands of items in a single list, making it too costly to load them
+   * all at once.
+   *
+   * @return int[]
+   *   The price list item IDs.
+   */
+  public function getItemIds();
 
 }

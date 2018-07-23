@@ -1,6 +1,6 @@
 services:
-  commerce_pricelist.default_base_price_resolver:
-    class: Drupal\commerce_pricelist\Resolver\PriceListDefaultBasePriceResolver
-    arguments: ['@request_stack']
+  commerce_pricelist.price_resolver:
+    class: Drupal\commerce_pricelist\PriceListPriceResolver
+    arguments: ['@entity_type.manager']
     tags:
-      - { name: commerce_price.base_price_resolver, priority: 600 }
+      - { name: commerce_price.price_resolver, priority: 600 }

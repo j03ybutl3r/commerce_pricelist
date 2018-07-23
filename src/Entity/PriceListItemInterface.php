@@ -2,143 +2,92 @@
 
 namespace Drupal\commerce_pricelist\Entity;
 
+use Drupal\commerce\PurchasableEntityInterface;
 use Drupal\commerce_price\Price;
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityChangedInterface;
-use Drupal\user\EntityOwnerInterface;
 
 /**
  * Defines the interface for price list items.
- *
- * @ingroup commerce_pricelist
  */
-interface PriceListItemInterface extends ContentEntityInterface, EntityChangedInterface, EntityOwnerInterface {
+interface PriceListItemInterface extends ContentEntityInterface, EntityChangedInterface {
 
   /**
-   * Gets the price list item name.
+   * Gets the parent price list.
    *
-   * @return string
-   *   Name of the price list item.
+   * @return \Drupal\commerce_pricelist\Entity\PriceListInterface
+   *   The price list.
    */
-  public function getName();
+  public function getPriceList();
 
   /**
-   * Sets the price list item name.
+   * Gets the parent price list ID.
    *
-   * @param string $name
-   *   The price list item name.
+   * @return int
+   *   The price list ID.
+   */
+  public function getPriceListId();
+
+  /**
+   * Gets the purchasable entity.
+   *
+   * @return \Drupal\commerce\PurchasableEntityInterface|null
+   *   The purchasable entity, or NULL.
+   */
+  public function getPurchasableEntity();
+
+  /**
+   * Sets the purchasable entity.
+   *
+   * @param \Drupal\commerce\PurchasableEntityInterface $purchasable_entity
+   *   The purchasable entity.
    *
    * @return $this
    */
-  public function setName($name);
+  public function setPurchasableEntity(PurchasableEntityInterface $purchasable_entity);
 
   /**
-   * Gets the price list item quantity.
+   * Gets the purchasable entity ID.
+   *
+   * @return int
+   *   The purchasable entity ID.
+   */
+  public function getPurchasableEntityId();
+
+  /**
+   * Sets the purchasable entity ID.
+   *
+   * @param string $purchasable_entity_id
+   *   The purchasable entity ID.
+   *
+   * @return $this
+   */
+  public function setPurchasableEntityId($purchasable_entity_id);
+
+  /**
+   * Gets the quantity.
+   *
+   * Represents a quantity tier.
+   * For example, if the price list has items for 10, 50, and 100 products,
+   * and the customer orders 20, they will get the price for 10.
    *
    * @return string
-   *   Quantity of the price list item.
+   *   The quantity.
    */
   public function getQuantity();
 
   /**
-   * Sets the price list item quantity.
+   * Sets the quantity.
    *
    * @param string $quantity
-   *   The price list item quantity.
+   *   The quantity.
    *
    * @return $this
    */
   public function setQuantity($quantity);
 
   /**
-   * Gets the price list item creation timestamp.
-   *
-   * @return int
-   *   Creation timestamp of the price list item.
-   */
-  public function getCreatedTime();
-
-  /**
-   * Sets the price list item creation timestamp.
-   *
-   * @param int $timestamp
-   *   The price list item creation timestamp.
-   *
-   *   * @return $this.
-   */
-  public function setCreatedTime($timestamp);
-
-  /**
-   * Sets the parent price list ID.
-   *
-   * @param string $price_list_id
-   *   The parent price list ID.
-   *
-   * @return $this
-   */
-  public function setPriceListId($price_list_id);
-
-  /**
-   * Sets the parent price list.
-   *
-   * @param \Drupal\commerce_pricelist\Entity\PriceListInterface $price_list
-   *   The price list entity.
-   *
-   * @return $this
-   */
-  public function setPriceList(PriceListInterface $price_list);
-
-  /**
-   * Gets the price list.
-   *
-   * @return $this
-   */
-  public function getPriceList();
-
-  /**
-   * Gets the price list ID.
-   *
-   * @return int
-   *   The parent price list entity ID.
-   */
-  public function getPriceListId();
-
-  /**
-   * Gets whether the price list item has a purchased entity.
-   *
-   * @return bool
-   *   TRUE if the price list item has a purchased entity, FALSE otherwise.
-   */
-  public function hasPurchasedEntity();
-
-  /**
-   * Gets the purchased entity.
-   *
-   * @return \Drupal\commerce\PurchasableEntityInterface|null
-   *   The purchased entity, or NULL.
-   */
-  public function getPurchasedEntity();
-
-  /**
-   * Gets the purchased entity ID.
-   *
-   * @return int
-   *   The purchased entity ID.
-   */
-  public function getPurchasedEntityId();
-
-  /**
-   * Sets the price list item purchased entity ID.
-   *
-   * @param string $purchased_entity_id
-   *   The purchased entity ID.
-   *
-   * @return $this
-   */
-  public function setPurchasedEntityId($purchased_entity_id);
-
-  /**
-   * Gets the price list item price.
+   * Gets the price.
    *
    * @return \Drupal\commerce_price\Price
    *   The price.
@@ -146,7 +95,7 @@ interface PriceListItemInterface extends ContentEntityInterface, EntityChangedIn
   public function getPrice();
 
   /**
-   * Sets the price list item price.
+   * Sets the price.
    *
    * @param \Drupal\commerce_price\Price $price
    *   The price.
@@ -156,25 +105,21 @@ interface PriceListItemInterface extends ContentEntityInterface, EntityChangedIn
   public function setPrice(Price $price);
 
   /**
-   * Get whether or not the price list item is active.
+   * Get whether the price list item is enabled.
    *
    * @return bool
-   *   TRUE if the rice list item is acive, FALSE otherwise.
+   *   TRUE if the price list item is enabled, FALSE otherwise.
    */
-  public function isActive();
+  public function isEnabled();
 
   /**
-   * Sets the price list item active.
+   * Sets whether the price list item is enabled.
+   *
+   * @param bool $enabled
+   *   Whether the price list item is enabled.
    *
    * @return $this
    */
-  public function setActive();
-
-  /**
-   * Set the price list item inactive.
-   *
-   * @return $this
-   */
-  public function setInactive();
+  public function setEnabled($enabled);
 
 }
