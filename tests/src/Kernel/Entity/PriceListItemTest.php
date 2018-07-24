@@ -73,6 +73,8 @@ class PriceListItemTest extends PriceListKernelTestBase {
    * @covers ::setPurchasableEntityId
    * @covers ::getQuantity
    * @covers ::setQuantity
+   * @covers ::getListPrice
+   * @covers ::setListPrice
    * @covers ::getPrice
    * @covers ::setPrice
    * @covers ::isEnabled
@@ -96,6 +98,10 @@ class PriceListItemTest extends PriceListKernelTestBase {
 
     $price_list_item->setQuantity('10');
     $this->assertEquals('10', $price_list_item->getQuantity());
+
+    $list_price = new Price('11', 'USD');
+    $price_list_item->setListPrice($list_price);
+    $this->assertEquals($list_price, $price_list_item->getListPrice());
 
     $price = new Price('9', 'USD');
     $price_list_item->setPrice($price);

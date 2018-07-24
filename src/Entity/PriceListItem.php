@@ -143,6 +143,22 @@ class PriceListItem extends CommerceContentEntityBase implements PriceListItemIn
   /**
    * {@inheritdoc}
    */
+  public function getListPrice() {
+    if (!$this->get('list_price')->isEmpty()) {
+      return $this->get('list_price')->first()->toPrice();
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setListPrice(Price $list_price) {
+    return $this->set('list_price', $list_price);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function getPrice() {
     if (!$this->get('price')->isEmpty()) {
       return $this->get('price')->first()->toPrice();
@@ -206,6 +222,17 @@ class PriceListItem extends CommerceContentEntityBase implements PriceListItemIn
       ->setDefaultValue(1)
       ->setDisplayOptions('form', [
         'type' => 'commerce_quantity',
+      ]);
+
+    $fields['list_price'] = BaseFieldDefinition::create('commerce_price')
+      ->setLabel(t('List price'))
+      ->setDescription(t('The list price.'))
+      ->setDisplayOptions('view', [
+        'label' => 'above',
+        'type' => 'commerce_price_default',
+      ])
+      ->setDisplayOptions('form', [
+        'type' => 'commerce_price_default',
       ]);
 
     $fields['price'] = BaseFieldDefinition::create('commerce_price')

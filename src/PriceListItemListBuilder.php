@@ -82,6 +82,7 @@ class PriceListItemListBuilder extends EntityListBuilder {
 
     $header['purchasable_entity'] = $purchasable_entity_type->getLabel();
     $header['quantity'] = $this->t('Quantity');
+    $header['list_price'] = $this->t('List price');
     $header['price'] = $this->t('Price');
     $header['status'] = $this->t('Status');
 
@@ -95,6 +96,15 @@ class PriceListItemListBuilder extends EntityListBuilder {
     /* @var \Drupal\commerce_pricelist\Entity\PriceListItemInterface $entity */
     $row['purchasable_entity'] = $entity->getPurchasableEntity()->getOrderItemTitle();
     $row['quantity'] = Calculator::trim($entity->getQuantity());
+    $row['list_price'] = [
+      'data' => [
+        '#type' => 'inline_template',
+        '#template' => '{{list_price|commerce_price_format|default("N/A")}}',
+        '#context' => [
+          'list_price' => $entity->getListPrice(),
+        ],
+      ],
+    ];
     $row['price'] = [
       'data' => [
         '#type' => 'inline_template',
