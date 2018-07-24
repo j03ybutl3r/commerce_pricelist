@@ -95,14 +95,16 @@ class PriceListPriceResolver implements PriceResolverInterface {
    *   The price list IDs.
    */
   protected function loadPriceListIds($bundle, Context $context) {
+    $customer_id = $context->getCustomer()->id();
+    $store_id = $context->getStore()->id();
     $today = gmdate('Y-m-d', $context->getTime());
-    $cache_key = sprintf('%s:%s:%s', $context->getCustomer()->id(), $context->getStore()->id(), $today);
+    $cache_key = sprintf('%s:%s:%s:%s', $bundle, $customer_id, $store_id, $today);
     if (!isset($this->priceListIds[$cache_key])) {
       $price_list_storage = $this->entityTypeManager->getStorage('commerce_pricelist');
       $query = $price_list_storage->getQuery();
       $query
         ->condition('type', $bundle)
-        ->condition('stores', [$context->getStore()->id()], 'IN')
+        ->condition('stores', [$store_id], 'IN')
         ->condition('start_date', $today, '<=')
         ->condition($query->orConditionGroup()
           ->condition('end_date', $today, '>=')
