@@ -77,7 +77,10 @@ class PriceListItemListBuilder extends EntityListBuilder {
    * {@inheritdoc}
    */
   public function buildHeader() {
-    $header['purchasable_entity'] = $this->t('Purchasable entity');
+    $price_list = $this->routeMatch->getParameter('commerce_pricelist');
+    $purchasable_entity_type = $this->entityTypeManager->getDefinition($price_list->bundle());
+
+    $header['purchasable_entity'] = $purchasable_entity_type->getLabel();
     $header['quantity'] = $this->t('Quantity');
     $header['price'] = $this->t('Price');
     $header['status'] = $this->t('Status');
@@ -111,10 +114,6 @@ class PriceListItemListBuilder extends EntityListBuilder {
    */
   public function render() {
     $build = parent::render();
-    // Set the purchasable_entity column name based on the entity type label.
-    $price_list = $this->routeMatch->getParameter('commerce_pricelist');
-    $purchasable_entity_type = $this->entityTypeManager->getDefinition($price_list->bundle());
-    $build['table']['#header']['purchasable_entity'] = $purchasable_entity_type->getLabel();
     $build['table']['#empty'] = $this->t('There are no prices yet.');
 
     return $build;

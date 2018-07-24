@@ -103,11 +103,9 @@ class PriceListListBuilder extends EntityListBuilder implements FormInterface {
    * {@inheritdoc}
    */
   public function buildRow(EntityInterface $entity) {
-    /* @var $entity \Drupal\commerce_pricelist\Entity\PriceList */
-
+    /* @var \Drupal\commerce_pricelist\Entity\PriceListInterface $entity */
     $row['#attributes']['class'][] = 'draggable';
     $row['#weight'] = $entity->getWeight();
-
     $row['name'] = $entity->label();
     if (!$entity->isEnabled()) {
       $row['name'] .= ' (' . $this->t('Disabled') . ')';
