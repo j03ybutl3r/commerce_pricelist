@@ -42,6 +42,7 @@ class PriceListItemTest extends CommerceBrowserTestBase {
   public static $modules = [
     'commerce_product',
     'commerce_pricelist',
+    'commerce_pricelist_test',
   ];
 
   /**
@@ -152,6 +153,66 @@ class PriceListItemTest extends CommerceBrowserTestBase {
     \Drupal::service('entity_type.manager')->getStorage('commerce_pricelist_item')->resetCache([$price_list_item->id()]);
     $price_list_item_exists = (bool) PriceListItem::load($price_list_item->id());
     $this->assertFalse($price_list_item_exists);
+  }
+
+  /**
+   * Tests importing price list items.
+   */
+  public function testImportPriceListItems() {
+    // A price list item to be deleted.
+    $price_list_item = $this->createEntity('commerce_pricelist_item', [
+      'type' => 'commerce_product_variation',
+      'price_list_id' => $this->priceList->id(),
+      'purchasable_entity' => $this->firstVariation->id(),
+      'quantity' => '10',
+      'price' => new Price('666', 'USD'),
+    ]);
+
+    $collection_url = Url::fromRoute('entity.commerce_pricelist_item.collection', [
+      'commerce_pricelist' => $this->priceList->id(),
+    ]);
+    $this->drupalGet($collection_url->toString());
+    $this->clickLink('Import prices');
+
+    $filepath = drupal_get_path('module', 'commerce_pricelist_test') . '/files/prices.csv';
+    $this->getSession()->getPage()->attachFileToField('files[csv]', $filepath);
+    $this->submitForm([
+      'mapping[quantity_column]' => 'qty',
+      'mapping[list_price_column]' => 'msrp',
+      'mapping[currency_column]' => 'currency',
+      'delete_existing' => TRUE,
+    ], t('Import prices'));
+    $this->assertSession()->pageTextContains('Imported 2 prices.');
+    $this->assertSession()->pageTextContains('Skipped 2 prices during import.');
+    $this->assertSession()->pageTextContains('Red shirt');
+    $this->assertSession()->pageTextContains('Blue shirt');
+
+    /** @var \Drupal\Core\Entity\EntityStorageInterface $price_list_item_storage */
+    $price_list_item_storage = \Drupal::service('entity_type.manager')->getStorage('commerce_pricelist_item');
+    // Confirm that the existing price list item was deleted.
+    $price_list_item_storage->resetCache([$price_list_item->id()]);
+    $price_list_item_exists = (bool) PriceListItem::load($price_list_item->id());
+    $this->assertFalse($price_list_item_exists);
+
+    // Confirm that two new price list items have been created.
+    /** @var \Drupal\commerce_pricelist\Entity\PriceListItemInterface[] $price_list_items */
+    $price_list_items = $price_list_item_storage->loadMultiple();
+    $this->assertCount(2, $price_list_items);
+    $first_price_list_item = reset($price_list_items);
+    $this->assertEquals($this->priceList->id(), $first_price_list_item->getPriceListId());
+    $this->assertEquals($this->firstVariation->id(), $first_price_list_item->getPurchasableEntityId());
+    $this->assertEquals('1', $first_price_list_item->getQuantity());
+    $this->assertEquals(new Price('50', 'USD'), $first_price_list_item->getListPrice());
+    $this->assertEquals(new Price('40', 'USD'), $first_price_list_item->getPrice());
+    $this->assertTrue($first_price_list_item->isEnabled());
+
+    $second_price_list_item = end($price_list_items);
+    $this->assertEquals($this->priceList->id(), $second_price_list_item->getPriceListId());
+    $this->assertEquals($this->secondVariation->id(), $second_price_list_item->getPurchasableEntityId());
+    $this->assertEquals('3', $second_price_list_item->getQuantity());
+    $this->assertEquals(new Price('99.99', 'USD'), $second_price_list_item->getListPrice());
+    $this->assertEquals(new Price('89.99', 'USD'), $second_price_list_item->getPrice());
+    $this->assertTrue($second_price_list_item->isEnabled());
   }
 
 }

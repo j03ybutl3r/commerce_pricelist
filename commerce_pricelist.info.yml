@@ -7,3 +7,4 @@ dependencies:
   - commerce:commerce
   - commerce:commerce_store
   - commerce:commerce_price
+  - drupal:file
