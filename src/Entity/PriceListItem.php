@@ -200,6 +200,7 @@ class PriceListItem extends CommerceContentEntityBase implements PriceListItemIn
     $fields['quantity'] = BaseFieldDefinition::create('decimal')
       ->setLabel(t('Quantity'))
       ->setDescription(t('The quantity tier.'))
+      ->setRequired(TRUE)
       ->setSetting('unsigned', TRUE)
       ->setSetting('min', 0)
       ->setDefaultValue(1)
@@ -210,6 +211,7 @@ class PriceListItem extends CommerceContentEntityBase implements PriceListItemIn
     $fields['price'] = BaseFieldDefinition::create('commerce_price')
       ->setLabel(t('Price'))
       ->setDescription(t('The price.'))
+      ->setRequired(TRUE)
       ->setDisplayOptions('view', [
         'label' => 'above',
         'type' => 'commerce_price_default',
