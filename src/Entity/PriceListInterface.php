@@ -6,6 +6,7 @@ use Drupal\commerce_store\Entity\EntityStoresInterface;
 use Drupal\Core\Datetime\DrupalDateTime;
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityChangedInterface;
+use Drupal\user\UserInterface;
 
 /**
  * Defines the interface for price lists.
@@ -31,36 +32,93 @@ interface PriceListInterface extends ContentEntityInterface, EntityChangedInterf
   public function setName($name);
 
   /**
-   * Gets the price list start date.
+   * Gets the customer.
+   *
+   * @return \Drupal\user\UserInterface|null
+   *   The customer user entity, or NULL if the price list is not limited to a
+   *   specific customer.
+   */
+  public function getCustomer();
+
+  /**
+   * Sets the customer.
+   *
+   * @param \Drupal\user\UserInterface $user
+   *   The customer.
+   *
+   * @return $this
+   */
+  public function setCustomer(UserInterface $user);
+
+  /**
+   * Gets the customer ID.
+   *
+   * @return int|null
+   *   The customer ID, or NULL if the price list is not limited to a specific
+   *   customer.
+   */
+  public function getCustomerId();
+
+  /**
+   * Sets the customer ID.
+   *
+   * @param int $uid
+   *   The customer ID.
+   *
+   * @return $this
+   */
+  public function setCustomerId($uid);
+
+  /**
+   * Gets the customer role.
+   *
+   * @return string|null
+   *   The customer role ID, or NULL if the price list is not limited to a
+   *   specific customer role.
+   */
+  public function getCustomerRole();
+
+  /**
+   * Sets the customer role.
+   *
+   * @param string $rid
+   *   The role ID.
+   *
+   * @return $this
+   */
+  public function setCustomerRole($rid);
+
+  /**
+   * Gets the start date.
    *
    * @return \Drupal\Core\Datetime\DrupalDateTime
-   *   The price list start date.
+   *   The start date.
    */
   public function getStartDate();
 
   /**
-   * Sets the price list start date.
+   * Sets the start date.
    *
    * @param \Drupal\Core\Datetime\DrupalDateTime $start_date
-   *   The price list start date.
+   *   The start date.
    *
    * @return $this
    */
   public function setStartDate(DrupalDateTime $start_date);
 
   /**
-   * Gets the price list end date.
+   * Gets the end date.
    *
    * @return \Drupal\Core\Datetime\DrupalDateTime|null
-   *   The price list end date, or NULL
+   *   The end date, or NULL if the price list is not limited by end date.
    */
   public function getEndDate();
 
   /**
-   * Sets the price list end date.
+   * Sets the end date.
    *
    * @param \Drupal\Core\Datetime\DrupalDateTime $end_date
-   *   The price list end date.
+   *   The end date.
    *
    * @return $this
    */

@@ -8,6 +8,7 @@ use Drupal\commerce_pricelist\Entity\PriceList;
 use Drupal\commerce_pricelist\Entity\PriceListItem;
 use Drupal\commerce_product\Entity\ProductVariation;
 use Drupal\Core\Datetime\DrupalDateTime;
+use Drupal\user\Entity\Role;
 
 /**
  * Tests the price resolver.
@@ -74,16 +75,10 @@ class PriceResolverTest extends PriceListKernelTestBase {
   }
 
   /**
-   * Tests resolving a price list item with no price list conditions.
+   * Tests variation-based resolving.
    */
-  public function testSimplePriceList() {
-    $context = new Context($this->user, $this->store);
+  public function testVariation() {
     $resolver = $this->container->get('commerce_pricelist.price_resolver');
-
-    $resolved_price = $resolver->resolve($this->variation, 1, $context);
-    $this->assertNotEmpty($resolved_price);
-    $this->assertEquals(new Price('5.00', 'USD'), $resolved_price);
-
     $other_variation = ProductVariation::create([
       'type' => 'default',
       'sku' => strtolower($this->randomMachineName()),
@@ -92,14 +87,113 @@ class PriceResolverTest extends PriceListKernelTestBase {
     ]);
     $other_variation->save();
 
+    $context = new Context($this->user, $this->store);
+    $resolved_price = $resolver->resolve($this->variation, 1, $context);
+    $this->assertNotEmpty($resolved_price);
+    $this->assertEquals(new Price('5.00', 'USD'), $resolved_price);
+
     $resolved_price = $resolver->resolve($other_variation, 1, $context);
     $this->assertEmpty($resolved_price);
   }
 
   /**
-   * Tests resolving a price list item based on quantity.
+   * Tests store-based resolving.
    */
-  public function testPriceListWithQuantity() {
+  public function testStores() {
+    $context = new Context($this->user, $this->store);
+    $resolver = $this->container->get('commerce_pricelist.price_resolver');
+
+    $new_store = $this->createStore();
+    $this->priceList->setStores([$new_store]);
+    $this->priceList->save();
+
+    $resolved_price = $resolver->resolve($this->variation, 1, $context);
+    $this->assertEmpty($resolved_price);
+
+    $context = new Context($this->user, $new_store);
+    $resolved_price = $resolver->resolve($this->variation, 1, $context);
+    $this->assertEquals(new Price('5.00', 'USD'), $resolved_price);
+  }
+
+  /**
+   * Tests customer-based resolving.
+   */
+  public function testCustomer() {
+    $resolver = $this->container->get('commerce_pricelist.price_resolver');
+    $customer = $this->createUser();
+    $this->priceList->setCustomer($customer);
+    $this->priceList->save();
+
+    $context = new Context($this->user, $this->store);
+    $resolved_price = $resolver->resolve($this->variation, 1, $context);
+    $this->assertEmpty($resolved_price);
+
+    $context = new Context($customer, $this->store);
+    $resolved_price = $resolver->resolve($this->variation, 1, $context);
+    $this->assertEquals(new Price('5.00', 'USD'), $resolved_price);
+  }
+
+  /**
+   * Tests role-based resolving.
+   */
+  public function testCustomerRole() {
+    $resolver = $this->container->get('commerce_pricelist.price_resolver');
+    $customer_role = Role::create([
+      'id' => strtolower($this->randomMachineName(8)),
+      'label' => $this->randomMachineName(8),
+    ]);
+    $customer_role->save();
+    $this->priceList->setCustomerRole($customer_role->id());
+    $this->priceList->save();
+
+    $context = new Context($this->user, $this->store);
+    $resolved_price = $resolver->resolve($this->variation, 1, $context);
+    $this->assertEmpty($resolved_price);
+
+    $another_user = $this->createUser();
+    $another_user->addRole($customer_role->id());
+    $another_user->save();
+
+    $context = new Context($another_user, $this->store);
+    $resolved_price = $resolver->resolve($this->variation, 1, $context);
+    $this->assertEquals(new Price('5.00', 'USD'), $resolved_price);
+  }
+
+  /**
+   * Tests date-based resolving.
+   */
+  public function testDates() {
+    $resolver = $this->container->get('commerce_pricelist.price_resolver');
+    $this->priceList->setStartDate(new DrupalDateTime('-3 months'));
+    $this->priceList->setEndDate(new DrupalDateTime('+1 year'));
+    $this->priceList->save();
+
+    $context = new Context($this->user, $this->store);
+    $resolved_price = $resolver->resolve($this->variation, 1, $context);
+    $this->assertEquals(new Price('5.00', 'USD'), $resolved_price);
+
+    // Set the price list to start in the future.
+    $this->priceList->setStartDate(new DrupalDateTime('+1 month'));
+    $this->priceList->save();
+
+    $context = new Context($this->user, $this->store, time() + 86400);
+    $resolved_price = $resolver->resolve($this->variation, 1, $context);
+    $this->assertEmpty($resolved_price);
+
+    // Expired.
+    $this->priceList->setStartDate(new DrupalDateTime('-3 months'));
+    $this->priceList->setEndDate(new DrupalDateTime('-1 month'));
+    $this->priceList->save();
+
+    $context = new Context($this->user, $this->store, time() + 86400 * 2);
+    $resolved_price = $resolver->resolve($this->variation, 1, $context);
+    $this->assertEmpty($resolved_price);
+  }
+
+  /**
+   * Tests quantity-based resolving.
+   */
+  public function testQuantity() {
     $context = new Context($this->user, $this->store);
     $resolver = $this->container->get('commerce_pricelist.price_resolver');
     $this->priceListItem->setQuantity(10);
@@ -134,56 +228,6 @@ class PriceResolverTest extends PriceListKernelTestBase {
     $this->assertEmpty($resolved_price);
     $resolved_price = $resolver->resolve($this->variation, 15, $context);
     $this->assertEquals(new Price('7.00', 'USD'), $resolved_price);
-  }
-
-  /**
-   * Tests resolving a price list item where the price list has start/end dates.
-   */
-  public function testPriceListWithDates() {
-    $resolver = $this->container->get('commerce_pricelist.price_resolver');
-    $this->priceList->setStartDate(new DrupalDateTime('-3 months'));
-    $this->priceList->setEndDate(new DrupalDateTime('+1 year'));
-    $this->priceList->save();
-
-    $context = new Context($this->user, $this->store);
-    $resolved_price = $resolver->resolve($this->variation, 1, $context);
-    $this->assertNotEmpty($resolved_price);
-
-    // Set the price list to start in the future.
-    $this->priceList->setStartDate(new DrupalDateTime('+1 month'));
-    $this->priceList->save();
-
-    $context = new Context($this->user, $this->store, time() + 86400);
-    $resolved_price = $resolver->resolve($this->variation, 1, $context);
-    $this->assertEmpty($resolved_price);
-
-    // Expired.
-    $this->priceList->setStartDate(new DrupalDateTime('-3 months'));
-    $this->priceList->setEndDate(new DrupalDateTime('-1 month'));
-    $this->priceList->save();
-
-    $context = new Context($this->user, $this->store, time() + 86400 * 2);
-    $resolved_price = $resolver->resolve($this->variation, 1, $context);
-    $this->assertEmpty($resolved_price);
-  }
-
-  /**
-   * Tests resolving a price list item based on store.
-   */
-  public function testWithStore() {
-    $context = new Context($this->user, $this->store);
-    $resolver = $this->container->get('commerce_pricelist.price_resolver');
-
-    $new_store = $this->createStore();
-    $this->priceList->setStores([$new_store]);
-    $this->priceList->save();
-
-    $resolved_price = $resolver->resolve($this->variation, 1, $context);
-    $this->assertEmpty($resolved_price);
-
-    $context = new Context($this->user, $new_store);
-    $resolved_price = $resolver->resolve($this->variation, 1, $context);
-    $this->assertNotEmpty($resolved_price);
   }
 
 }

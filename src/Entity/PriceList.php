@@ -9,6 +9,7 @@ use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\commerce\Entity\CommerceContentEntityBase;
 use Drupal\Core\Entity\EntityChangedTrait;
 use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\user\UserInterface;
 
 /**
  * Defines the Price list entity.
@@ -108,6 +109,51 @@ class PriceList extends CommerceContentEntityBase implements PriceListInterface 
    */
   public function setStoreIds(array $store_ids) {
     $this->set('stores', $store_ids);
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getCustomer() {
+    return $this->get('customer')->entity;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setCustomer(UserInterface $user) {
+    $this->set('customer', $user);
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getCustomerId() {
+    return $this->get('customer')->target_id;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setCustomerId($uid) {
+    $this->set('customer', $uid);
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getCustomerRole() {
+    return $this->get('customer_role')->target_id;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setCustomerRole($rid) {
+    $this->set('customer_role', $rid);
     return $this;
   }
 
@@ -236,6 +282,29 @@ class PriceList extends CommerceContentEntityBase implements PriceListInterface 
       ->setDisplayOptions('form', [
         'type' => 'commerce_entity_select',
         'weight' => 2,
+      ]);
+
+    $fields['customer'] = BaseFieldDefinition::create('entity_reference')
+      ->setLabel(t('Customer'))
+      ->setDescription(t('The customer for which the price list is valid.'))
+      ->setSetting('target_type', 'user')
+      ->setSetting('handler', 'default')
+      ->setDisplayOptions('form', [
+        'type' => 'entity_reference_autocomplete',
+        'settings' => [
+          'match_operator' => 'CONTAINS',
+          'size' => '60',
+          'autocomplete_type' => 'tags',
+          'placeholder' => '',
+        ],
+      ]);
+
+    $fields['customer_role'] = BaseFieldDefinition::create('entity_reference')
+      ->setLabel(t('Customer role'))
+      ->setDescription(t('The customer role for which the price list is valid.'))
+      ->setSetting('target_type', 'user_role')
+      ->setDisplayOptions('form', [
+        'type' => 'options_select',
       ]);
 
     $fields['start_date'] = BaseFieldDefinition::create('datetime')

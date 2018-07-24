@@ -23,6 +23,12 @@ class PriceListTest extends PriceListKernelTestBase {
    * @covers ::setStores
    * @covers ::getStoreIds
    * @covers ::setStoreIds
+   * @covers ::getCustomer
+   * @covers ::setCustomer
+   * @covers ::getCustomerId
+   * @covers ::setCustomerId
+   * @covers ::getCustomerRole
+   * @covers ::setCustomerRole
    * @covers ::getStartDate
    * @covers ::setStartDate
    * @covers ::getEndDate
@@ -51,6 +57,17 @@ class PriceListTest extends PriceListKernelTestBase {
     $price_list->setStoreIds([$this->store->id()]);
     $this->assertEquals([$this->store], $price_list->getStores());
     $this->assertEquals([$this->store->id()], $price_list->getStoreIds());
+
+    $price_list->setCustomer($this->user);
+    $this->assertEquals($this->user, $price_list->getCustomer());
+    $this->assertEquals($this->user->id(), $price_list->getCustomerId());
+    $price_list->set('customer', NULL);
+    $price_list->setCustomerId($this->user->id());
+    $this->assertEquals($this->user->id(), $price_list->getCustomerId());
+    $this->assertEquals($this->user, $price_list->getCustomer());
+
+    $price_list->setCustomerRole('authenticated');
+    $this->assertEquals('authenticated', $price_list->getCustomerRole());
 
     $time = $this->container->get('datetime.time');
     $this->assertEquals(gmdate('Y-m-d', $time->getRequestTime()), PriceList::getDefaultStartDate());
