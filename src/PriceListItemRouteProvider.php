@@ -20,6 +20,11 @@ class PriceListItemRouteProvider extends AdminHtmlRouteProvider {
         'type' => 'entity:commerce_pricelist',
       ],
     ]);
+    // Replace the "Add price list item" title with "Add price".
+    // The t() function is used to ensure the string is picked up for
+    // translation, even though _title is supposed to be untranslated.
+    $route->setDefault('_title_callback', '');
+    $route->setDefault('_title', t('Add price')->getUntranslatedString());
 
     return $route;
   }
