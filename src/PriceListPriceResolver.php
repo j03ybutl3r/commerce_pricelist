@@ -49,6 +49,7 @@ class PriceListPriceResolver implements PriceResolverInterface {
       ->condition('price_list_id', $price_list_ids, 'IN')
       ->condition('quantity', $quantity, '<=')
       ->condition('purchasable_entity', $entity->id())
+      ->condition('status', TRUE)
       ->sort('quantity', 'ASC');
     $result = $query->execute();
     if (empty($result)) {

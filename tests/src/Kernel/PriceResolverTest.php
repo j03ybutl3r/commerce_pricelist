@@ -89,7 +89,6 @@ class PriceResolverTest extends PriceListKernelTestBase {
 
     $context = new Context($this->user, $this->store);
     $resolved_price = $resolver->resolve($this->variation, 1, $context);
-    $this->assertNotEmpty($resolved_price);
     $this->assertEquals(new Price('5.00', 'USD'), $resolved_price);
 
     $resolved_price = $resolver->resolve($other_variation, 1, $context);
@@ -191,7 +190,7 @@ class PriceResolverTest extends PriceListKernelTestBase {
   }
 
   /**
-   * Tests quantity-based resolving.
+   * Tests quantity-based resolving, along with weight and status handling.
    */
   public function testQuantity() {
     $context = new Context($this->user, $this->store);
@@ -228,6 +227,20 @@ class PriceResolverTest extends PriceListKernelTestBase {
     $this->assertEmpty($resolved_price);
     $resolved_price = $resolver->resolve($this->variation, 15, $context);
     $this->assertEquals(new Price('7.00', 'USD'), $resolved_price);
+
+    // Confirm that disabled price list items are skipped.
+    $price_list_item->setEnabled(FALSE);
+    $price_list_item->save();
+    $resolved_price = $resolver->resolve($this->variation, 15, $context);
+    $this->assertEquals(new Price('6.00', 'USD'), $resolved_price);
+
+    // Confirm that disabled price lists are skipped.
+    $price_list->setEnabled(FALSE);
+    $price_list->save();
+    $another_user = $this->createUser();
+    $context = new Context($another_user, $this->store);
+    $resolved_price = $resolver->resolve($this->variation, 15, $context);
+    $this->assertEquals(new Price('5.00', 'USD'), $resolved_price);
   }
 
 }
