@@ -92,6 +92,9 @@ function commerce_pricelist_theme() {
     'commerce_pricelist' => [
       'render element' => 'elements',
     ],
+    'commerce_pricelist_form' => [
+      'render element' => 'form',
+    ],
   ];
 }
 
