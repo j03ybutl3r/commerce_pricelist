@@ -38,7 +38,7 @@ function commerce_pricelist_entity_bundle_info() {
   foreach ($purchasable_entity_types as $entity_type) {
     $bundles['commerce_pricelist'][$entity_type->id()] = [
       'label' => $entity_type->getLabel(),
-      'description' => t('Create a price list for @label', ['@label' => $entity_type->getLowercaseLabel()]),
+      'description' => t('Create a price list for @plural_label', ['@plural_label' => $entity_type->getPluralLabel()]),
       'translatable' => FALSE,
       'provider' => 'commerce_pricelist',
     ];
