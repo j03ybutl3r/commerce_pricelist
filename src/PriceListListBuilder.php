@@ -215,7 +215,6 @@ class PriceListListBuilder extends EntityListBuilder implements FormInterface {
     if ($entity->access('update')) {
       $operations['prices'] = [
         'title' => $this->t('Prices'),
-        'weight' => 20,
         'url' => new Url('entity.commerce_pricelist_item.collection', [
           'commerce_pricelist' => $entity->id(),
         ]),
