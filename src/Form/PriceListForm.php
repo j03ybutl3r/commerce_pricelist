@@ -82,8 +82,8 @@ class PriceListForm extends ContentEntityForm {
       '#title' => $this->t('Customer eligibility'),
       '#options' => [
         'everyone' => $this->t('Everyone'),
-        'customer' => $this->t('Specific customers'),
-        'customer_role' => $this->t('Customer roles'),
+        'customer' => $this->t('Specific customer'),
+        'customer_role' => $this->t('Customer role'),
       ],
       '#default_value' => $default_value,
       '#weight' => 10,

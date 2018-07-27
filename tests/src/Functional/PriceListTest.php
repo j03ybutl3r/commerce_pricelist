@@ -44,7 +44,7 @@ class PriceListTest extends CommerceBrowserTestBase {
       'start_date[0][value][date]' => '2018-07-07',
       'customer_eligibility' => 'customer_role',
       'customer_role' => $role,
-      // THe customer should not be persisted due to the role being used.
+      // The customer should not be persisted due to the role being used.
       'customer[0][target_id]' => $this->adminUser->label() . ' (' . $this->adminUser->id() . ')',
     ], 'Save');
     $this->assertSession()->pageTextContains('Saved the Black Friday 2018 price list.');
@@ -78,7 +78,7 @@ class PriceListTest extends CommerceBrowserTestBase {
       'start_date[0][value][date]' => '2018-08-08',
       'customer_eligibility' => 'customer',
       'customer[0][target_id]' => $this->adminUser->label() . ' (' . $this->adminUser->id() . ')',
-      // THe role should not be persisted due to the customer being used.
+      // The role should not be persisted due to the customer being used.
       'customer_role' => $role,
     ], 'Save');
 
