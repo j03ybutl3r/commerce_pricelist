@@ -29,6 +29,9 @@ class PriceListForm extends ContentEntityForm {
    * {@inheritdoc}
    */
   public function form(array $form, FormStateInterface $form_state) {
+    /** @var \Drupal\commerce_pricelist\Entity\PriceListInterface $price_list */
+    $price_list = $this->entity;
+
     $form = parent::form($form, $form_state);
     $form['#tree'] = TRUE;
     $form['#theme'] = ['commerce_pricelist_form'];
@@ -65,7 +68,51 @@ class PriceListForm extends ContentEntityForm {
       }
     }
 
+    // Hide the customer/customer_role fields behind a set of radios, to
+    // emphasize that they are mutually exclusive.
+    $default_value = 'everyone';
+    if ($price_list->getCustomerId()) {
+      $default_value = 'customer';
+    }
+    elseif ($price_list->getCustomerRole()) {
+      $default_value = 'customer_role';
+    }
+    $form['customer_eligibility'] = [
+      '#type' => 'radios',
+      '#title' => $this->t('Customer eligibility'),
+      '#options' => [
+        'everyone' => $this->t('Everyone'),
+        'customer' => $this->t('Specific customers'),
+        'customer_role' => $this->t('Customer roles'),
+      ],
+      '#default_value' => $default_value,
+      '#weight' => 10,
+    ];
+    $form['customer']['widget'][0]['target_id']['#states']['visible'] = [
+      'input[name="customer_eligibility"]' => ['value' => 'customer'],
+    ];
+    $form['customer_role']['widget']['#states']['visible'] = [
+      'input[name="customer_eligibility"]' => ['value' => 'customer_role'],
+    ];
+    // Remove the '- None -' option from the customer role dropdown.
+    if ($form['customer_role']['widget']['#type'] == 'select') {
+      unset($form['customer_role']['widget']['#options']['_none']);
+    }
+    // EntityFormDisplay::processForm() overwrites any widget #weight set
+    // here, so the new weights must be assigned in a #process of our own.
+    $form['#process'][] = [get_class($this), 'modifyCustomerFieldWeights'];
+
     return $form;
+  }
+
+  /**
+   * Process callback: assigns new weights to customer fields.
+   */
+  public static function modifyCustomerFieldWeights($element, FormStateInterface $form_state, $form) {
+    $element['customer']['#weight'] = 11;
+    $element['customer_role']['#weight'] = 110;
+
+    return $element;
   }
 
   /**
@@ -90,11 +137,25 @@ class PriceListForm extends ContentEntityForm {
    * {@inheritdoc}
    */
   public function save(array $form, FormStateInterface $form_state) {
-    $this->entity->save();
-    drupal_set_message($this->t('Saved the %label price list.', ['%label' => $this->entity->label()]));
+    /** @var \Drupal\commerce_pricelist\Entity\PriceListInterface $price_list */
+    $price_list = $this->entity;
+    // Don't persist customer values that are not going to be used.
+    $customer_eligibility = $form_state->getValue('customer_eligibility');
+    if ($customer_eligibility == 'everyone') {
+      $price_list->setCustomerId(NULL);
+      $price_list->setCustomerRole(NULL);
+    }
+    elseif ($customer_eligibility == 'customer') {
+      $price_list->setCustomerRole(NULL);
+    }
+    elseif ($customer_eligibility == 'customer_role') {
+      $price_list->setCustomerId(NULL);
+    }
+    $price_list->save();
+    drupal_set_message($this->t('Saved the %label price list.', ['%label' => $price_list->label()]));
 
     if (!empty($form_state->getTriggeringElement()['#continue'])) {
-      $form_state->setRedirect('entity.commerce_pricelist_item.collection', ['commerce_pricelist' => $this->entity->id()]);
+      $form_state->setRedirect('entity.commerce_pricelist_item.collection', ['commerce_pricelist' => $price_list->id()]);
     }
     else {
       $form_state->setRedirect('entity.commerce_pricelist.collection');

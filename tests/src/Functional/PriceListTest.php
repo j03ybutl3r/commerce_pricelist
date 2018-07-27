@@ -37,25 +37,36 @@ class PriceListTest extends CommerceBrowserTestBase {
     $this->drupalGet(Url::fromRoute('entity.commerce_pricelist.collection')->toString());
     $this->clickLink('Add price list');
 
+    $roles = $this->adminUser->getRoles();
+    $role = reset($roles);
     $this->submitForm([
       'name[0][value]' => 'Black Friday 2018',
       'start_date[0][value][date]' => '2018-07-07',
+      'customer_eligibility' => 'customer_role',
+      'customer_role' => $role,
+      // THe customer should not be persisted due to the role being used.
+      'customer[0][target_id]' => $this->adminUser->label() . ' (' . $this->adminUser->id() . ')',
     ], 'Save');
     $this->assertSession()->pageTextContains('Saved the Black Friday 2018 price list.');
 
     $price_list = PriceList::load(1);
     $this->assertEquals('Black Friday 2018', $price_list->getName());
     $this->assertEquals('2018-07-07', $price_list->getStartDate()->format('Y-m-d'));
+    $this->assertEquals($role, $price_list->getCustomerRole());
+    $this->assertEmpty($price_list->getCustomerId());
   }
 
   /**
    * Tests editing a price list.
    */
   public function testEditPriceList() {
+    $roles = $this->adminUser->getRoles();
+    $role = reset($roles);
     $price_list = $this->createEntity('commerce_pricelist', [
       'type' => 'commerce_product_variation',
       'name' => $this->randomMachineName(8),
       'start_date' => '2018-07-07',
+      'customer_role' => $role,
     ]);
     $this->drupalGet($price_list->toUrl('edit-form'));
     $page = $this->getSession()->getPage();
@@ -65,12 +76,18 @@ class PriceListTest extends CommerceBrowserTestBase {
     $this->submitForm([
       'name[0][value]' => 'Random list',
       'start_date[0][value][date]' => '2018-08-08',
+      'customer_eligibility' => 'customer',
+      'customer[0][target_id]' => $this->adminUser->label() . ' (' . $this->adminUser->id() . ')',
+      // THe role should not be persisted due to the customer being used.
+      'customer_role' => $role,
     ], 'Save');
 
     \Drupal::service('entity_type.manager')->getStorage('commerce_pricelist')->resetCache([$price_list->id()]);
     $price_list = PriceList::load(1);
     $this->assertEquals('Random list', $price_list->getName());
     $this->assertEquals('2018-08-08', $price_list->getStartDate()->format('Y-m-d'));
+    $this->assertNull($price_list->getCustomerRole());
+    $this->assertEquals($this->adminUser->id(), $price_list->getCustomerId());
   }
 
   /**
