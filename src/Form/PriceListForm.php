@@ -110,7 +110,7 @@ class PriceListForm extends ContentEntityForm {
    */
   public static function modifyCustomerFieldWeights($element, FormStateInterface $form_state, $form) {
     $element['customer']['#weight'] = 11;
-    $element['customer_role']['#weight'] = 110;
+    $element['customer_role']['#weight'] = 11;
 
     return $element;
   }
