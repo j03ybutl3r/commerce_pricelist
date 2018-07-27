@@ -11,6 +11,18 @@ class PriceListItemForm extends ContentEntityForm {
   /**
    * {@inheritdoc}
    */
+  public function form(array $form, FormStateInterface $form_state) {
+    $form = parent::form($form, $form_state);
+    // The default form title is wrong because EntityController::doGetEntity()
+    // takes the price list entity instead of the price list item entity.
+    $form['#title'] = $this->t('Edit %label', ['%label' => $this->entity->label()]);
+
+    return $form;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function getEntityFromRouteMatch(RouteMatchInterface $route_match, $entity_type_id) {
     if ($route_match->getRawParameter($entity_type_id) !== NULL) {
       $entity = $route_match->getParameter($entity_type_id);
