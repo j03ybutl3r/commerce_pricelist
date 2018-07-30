@@ -232,7 +232,7 @@ class PriceListItem extends CommerceContentEntityBase implements PriceListItemIn
         'type' => 'commerce_price_default',
       ])
       ->setDisplayOptions('form', [
-        'type' => 'commerce_price_default',
+        'type' => 'commerce_list_price',
       ]);
 
     $fields['price'] = BaseFieldDefinition::create('commerce_price')
