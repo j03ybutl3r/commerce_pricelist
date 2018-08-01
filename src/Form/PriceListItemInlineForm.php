@@ -173,7 +173,7 @@ class PriceListItemInlineForm extends EntityInlineForm {
       $purchasedEntity = $this->entityTypeManager->getStorage($purchasedEntityTargetType)->load($purchasedEntityId);
     }
 
-    if (isset($purchasedEntity)) {
+    if (!empty($purchasedEntity)) {
       $price = $purchasedEntity->getPrice();
       if (!$price) {
         $entity_form['price']['widget']['#disabled'] = TRUE;
