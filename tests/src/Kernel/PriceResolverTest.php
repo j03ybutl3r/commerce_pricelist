@@ -66,6 +66,7 @@ class PriceResolverTest extends PriceListKernelTestBase {
       'price_list_id' => $price_list->id(),
       'purchasable_entity' => $variation->id(),
       'quantity' => '1',
+      'list_price' => new Price('7.70', 'USD'),
       'price' => new Price('5.00', 'USD'),
     ]);
     $price_list_item->save();
@@ -228,11 +229,19 @@ class PriceResolverTest extends PriceListKernelTestBase {
     $resolved_price = $resolver->resolve($this->variation, 15, $context);
     $this->assertEquals(new Price('7.00', 'USD'), $resolved_price);
 
+    // Reload the service to clear the static cache.
+    $this->container->set('commerce_pricelist.price_resolver', NULL);
+    $resolver = $this->container->get('commerce_pricelist.price_resolver');
+
     // Confirm that disabled price list items are skipped.
     $price_list_item->setEnabled(FALSE);
     $price_list_item->save();
     $resolved_price = $resolver->resolve($this->variation, 15, $context);
     $this->assertEquals(new Price('6.00', 'USD'), $resolved_price);
+
+    // Reload the service to clear the static cache.
+    $this->container->set('commerce_pricelist.price_resolver', NULL);
+    $resolver = $this->container->get('commerce_pricelist.price_resolver');
 
     // Confirm that disabled price lists are skipped.
     $price_list->setEnabled(FALSE);
@@ -241,6 +250,23 @@ class PriceResolverTest extends PriceListKernelTestBase {
     $context = new Context($another_user, $this->store);
     $resolved_price = $resolver->resolve($this->variation, 15, $context);
     $this->assertEquals(new Price('5.00', 'USD'), $resolved_price);
+  }
+
+  /**
+   * Tests resolving list prices.
+   */
+  public function testListPrice() {
+    $resolver = $this->container->get('commerce_pricelist.price_resolver');
+
+    $context = new Context($this->user, $this->store);
+    $resolved_price = $resolver->resolve($this->variation, 1, $context);
+    $this->assertEquals(new Price('5.00', 'USD'), $resolved_price);
+
+    $context = new Context($this->user, $this->store, NULL, [
+      'field_name' => 'list_price',
+    ]);
+    $resolved_price = $resolver->resolve($this->variation, 1, $context);
+    $this->assertEquals(new Price('7.70', 'USD'), $resolved_price);
   }
 
 }
