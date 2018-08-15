@@ -343,7 +343,6 @@ class PriceListItem extends CommerceContentEntityBase implements PriceListItemIn
       ->setLabel(t('Active'))
       ->setDescription(t('Whether the price list item is active.'))
       ->setDefaultValue(TRUE)
-      ->setRequired(TRUE)
       ->setTranslatable(TRUE)
       ->setDisplayOptions('form', [
         'type' => 'boolean_checkbox',
