@@ -18,6 +18,7 @@ use Drupal\commerce\Entity\CommerceBundleEntityBase;
  *     plural = "@count price list item types",
  *   ),
  *   handlers = {
+ *     "access" = "Drupal\commerce_pricelist\PriceListItemTypeAccessControlHandler",
  *     "list_builder" = "Drupal\commerce_pricelist\PriceListItemTypeListBuilder",
  *     "form" = {
  *       "add" = "Drupal\commerce_pricelist\Form\PriceListItemTypeForm",
