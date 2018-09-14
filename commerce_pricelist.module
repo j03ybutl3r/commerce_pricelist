@@ -26,29 +26,6 @@ function commerce_pricelist_help($route_name, RouteMatchInterface $route_match) 
 }
 
 /**
- * Implements hook_theme().
- */
-function commerce_pricelist_theme() {
-  $theme = [];
-  $theme['price_list'] = [
-    'render element' => 'elements',
-    'file' => 'price_list.page.inc',
-    'template' => 'price_list',
-  ];
-  $theme['price_list_content_add_list'] = [
-    'render element' => 'content',
-    'variables' => ['content' => NULL],
-    'file' => 'price_list.page.inc',
-  ];
-  $theme['price_list_item'] = [
-    'render element' => 'elements',
-    'file' => 'price_list_item.page.inc',
-    'template' => 'price_list_item',
-  ];
-  return $theme;
-}
-
-/**
  * Implements hook_entity_update().
  */
 function commerce_pricelist_entity_update(EntityInterface $entity) {
