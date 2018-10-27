@@ -334,11 +334,16 @@ class PriceList extends CommerceContentEntityBase implements PriceListInterface 
       ->setDefaultValue(0);
 
     $fields['status'] = BaseFieldDefinition::create('boolean')
-      ->setLabel(t('Active'))
+      ->setLabel(t('Status'))
       ->setDescription(t('Whether the price list is enabled.'))
       ->setDefaultValue(TRUE)
+      ->setRequired(TRUE)
+      ->setSettings([
+        'on_label' => t('Enabled'),
+        'off_label' => t('Disabled'),
+      ])
       ->setDisplayOptions('form', [
-        'type' => 'boolean_checkbox',
+        'type' => 'options_buttons',
       ]);
 
     $fields['changed'] = BaseFieldDefinition::create('changed')

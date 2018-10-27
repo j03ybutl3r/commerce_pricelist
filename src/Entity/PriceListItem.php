@@ -248,11 +248,16 @@ class PriceListItem extends CommerceContentEntityBase implements PriceListItemIn
       ]);
 
     $fields['status'] = BaseFieldDefinition::create('boolean')
-      ->setLabel(t('Active'))
+      ->setLabel(t('Status'))
       ->setDescription(t('Whether the price list item is enabled.'))
       ->setDefaultValue(TRUE)
+      ->setRequired(TRUE)
+      ->setSettings([
+        'on_label' => t('Enabled'),
+        'off_label' => t('Disabled'),
+      ])
       ->setDisplayOptions('form', [
-        'type' => 'boolean_checkbox',
+        'type' => 'options_buttons',
       ]);
 
     $fields['changed'] = BaseFieldDefinition::create('changed')
