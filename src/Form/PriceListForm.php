@@ -2,6 +2,7 @@
 
 namespace Drupal\commerce_pricelist\Form;
 
+use Drupal\commerce_pricelist\Entity\PriceList;
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Datetime\DateFormatterInterface;
 use Drupal\Core\Entity\EntityManagerInterface;
@@ -139,26 +140,28 @@ class PriceListForm extends ContentEntityForm {
    * {@inheritdoc}
    */
   public function save(array $form, FormStateInterface $form_state) {
-    $entity = $this->entity;
-    $status = parent::save($form, $form_state);
+    $price_list = $this->entity;
+    $insert = $price_list->isNew();
+    $price_list->save();
+    $price_list_link = $price_list->link($this->t('View'));
+    $context = ['@type' => $price_list->getType(), '%title' => $price_list->label(), 'link' => $price_list_link];
+    $price_list_type = PriceList::load($price_list->bundle());
+    $price_list_type_label = $price_list_type ? $price_list_type->label() : FALSE;
+    $t_args = ['@type' => $price_list_type_label, '%title' => $price_list->link($price_list->label())];
 
-    foreach ($entity->field_price_list_item as $item) {
+    if ($insert) {
+      $this->logger('price_list')->notice('@type: added %title.', $context);
+      $this->messenger()->addStatus($this->t('@type %title has been created.', $t_args));
+    }
+    else {
+      $this->logger('price_list')->notice('@type: updated %title.', $context);
+      $this->messenger()->addStatus($this->t('@type %title has been updated.', $t_args));
+    }
+
+    foreach ($price_list->field_price_list_item as $item) {
       $itemEntity = $item->get('entity')->getTarget()->getValue();
       $itemEntity->setWeight($item->getValue()['weight']);
       $itemEntity->save();
-    }
-
-    switch ($status) {
-      case SAVED_NEW:
-        $this->messenger->addMessage($this->t('Created the %label Price list.', [
-          '%label' => $entity->label(),
-        ]));
-        break;
-
-      default:
-        $this->messenger->addMessage($this->t('Saved the %label Price list.', [
-          '%label' => $entity->label(),
-        ]));
     }
 
     $form_state->setRedirect('entity.price_list.collection');
