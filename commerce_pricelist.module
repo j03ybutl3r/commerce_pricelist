@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Contains commerce_pricelist.module..
+ * Allows defining prices for specific stores, customers, quantities.
  */
 
 use Drupal\commerce\PurchasableEntityInterface;

@@ -145,15 +145,19 @@ class PriceList extends CommerceContentEntityBase implements PriceListInterface 
   /**
    * {@inheritdoc}
    */
-  public function getCustomerRole() {
-    return $this->get('customer_role')->target_id;
+  public function getCustomerRoles() {
+    $roles = [];
+    foreach ($this->get('customer_roles') as $field_item) {
+      $roles[] = $field_item->target_id;
+    }
+    return $roles;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setCustomerRole($rid) {
-    $this->set('customer_role', $rid);
+  public function setCustomerRoles(array $rids) {
+    $this->set('customer_roles', $rids);
     return $this;
   }
 
@@ -299,12 +303,13 @@ class PriceList extends CommerceContentEntityBase implements PriceListInterface 
         ],
       ]);
 
-    $fields['customer_role'] = BaseFieldDefinition::create('entity_reference')
-      ->setLabel(t('Customer role'))
-      ->setDescription(t('The customer role for which the price list is valid.'))
+    $fields['customer_roles'] = BaseFieldDefinition::create('entity_reference')
+      ->setLabel(t('Customer roles'))
+      ->setDescription(t('The customer roles for which the price list is valid.'))
+      ->setCardinality(BaseFieldDefinition::CARDINALITY_UNLIMITED)
       ->setSetting('target_type', 'user_role')
       ->setDisplayOptions('form', [
-        'type' => 'options_select',
+        'type' => 'options_buttons',
       ]);
 
     $fields['start_date'] = BaseFieldDefinition::create('datetime')

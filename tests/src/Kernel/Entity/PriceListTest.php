@@ -27,8 +27,8 @@ class PriceListTest extends PriceListKernelTestBase {
    * @covers ::setCustomer
    * @covers ::getCustomerId
    * @covers ::setCustomerId
-   * @covers ::getCustomerRole
-   * @covers ::setCustomerRole
+   * @covers ::getCustomerRoles
+   * @covers ::setCustomerRoles
    * @covers ::getStartDate
    * @covers ::setStartDate
    * @covers ::getEndDate
@@ -66,8 +66,8 @@ class PriceListTest extends PriceListKernelTestBase {
     $this->assertEquals($this->user->id(), $price_list->getCustomerId());
     $this->assertEquals($this->user, $price_list->getCustomer());
 
-    $price_list->setCustomerRole('authenticated');
-    $this->assertEquals('authenticated', $price_list->getCustomerRole());
+    $price_list->setCustomerRoles(['authenticated']);
+    $this->assertEquals(['authenticated'], $price_list->getCustomerRoles());
 
     $time = $this->container->get('datetime.time');
     $this->assertEquals(gmdate('Y-m-d', $time->getRequestTime()), PriceList::getDefaultStartDate());

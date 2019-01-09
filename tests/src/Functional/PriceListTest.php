@@ -42,8 +42,8 @@ class PriceListTest extends CommerceBrowserTestBase {
     $this->submitForm([
       'name[0][value]' => 'Black Friday 2018',
       'start_date[0][value][date]' => '2018-07-07',
-      'customer_eligibility' => 'customer_role',
-      'customer_role' => $role,
+      'customer_eligibility' => 'customer_roles',
+      "customer_roles[$role]" => $role,
       // The customer should not be persisted due to the role being used.
       'customer[0][target_id]' => $this->adminUser->label() . ' (' . $this->adminUser->id() . ')',
     ], 'Save');
@@ -52,7 +52,7 @@ class PriceListTest extends CommerceBrowserTestBase {
     $price_list = PriceList::load(1);
     $this->assertEquals('Black Friday 2018', $price_list->getName());
     $this->assertEquals('2018-07-07', $price_list->getStartDate()->format('Y-m-d'));
-    $this->assertEquals($role, $price_list->getCustomerRole());
+    $this->assertEquals([$role], $price_list->getCustomerRoles());
     $this->assertEmpty($price_list->getCustomerId());
   }
 
@@ -79,14 +79,14 @@ class PriceListTest extends CommerceBrowserTestBase {
       'customer_eligibility' => 'customer',
       'customer[0][target_id]' => $this->adminUser->label() . ' (' . $this->adminUser->id() . ')',
       // The role should not be persisted due to the customer being used.
-      'customer_role' => $role,
+      "customer_roles[$role]" => $role,
     ], 'Save');
 
     \Drupal::service('entity_type.manager')->getStorage('commerce_pricelist')->resetCache([$price_list->id()]);
     $price_list = PriceList::load(1);
     $this->assertEquals('Random list', $price_list->getName());
     $this->assertEquals('2018-08-08', $price_list->getStartDate()->format('Y-m-d'));
-    $this->assertNull($price_list->getCustomerRole());
+    $this->assertEmpty($price_list->getCustomerRoles());
     $this->assertEquals($this->adminUser->id(), $price_list->getCustomerId());
   }
 

@@ -136,25 +136,38 @@ class PriceResolverTest extends PriceListKernelTestBase {
   /**
    * Tests role-based resolving.
    */
-  public function testCustomerRole() {
+  public function testCustomerRoles() {
     $resolver = $this->container->get('commerce_pricelist.price_resolver');
-    $customer_role = Role::create([
+    $first_role = Role::create([
       'id' => strtolower($this->randomMachineName(8)),
       'label' => $this->randomMachineName(8),
     ]);
-    $customer_role->save();
-    $this->priceList->setCustomerRole($customer_role->id());
+    $first_role->save();
+    $second_role = Role::create([
+      'id' => strtolower($this->randomMachineName(8)),
+      'label' => $this->randomMachineName(8),
+    ]);
+    $second_role->save();
+    $this->priceList->setCustomerRoles([$first_role->id(), $second_role->id()]);
     $this->priceList->save();
 
     $context = new Context($this->user, $this->store);
     $resolved_price = $resolver->resolve($this->variation, 1, $context);
     $this->assertEmpty($resolved_price);
 
-    $another_user = $this->createUser();
-    $another_user->addRole($customer_role->id());
-    $another_user->save();
+    $second_user = $this->createUser();
+    $second_user->addRole($first_role->id());
+    $second_user->save();
 
-    $context = new Context($another_user, $this->store);
+    $context = new Context($second_user, $this->store);
+    $resolved_price = $resolver->resolve($this->variation, 1, $context);
+    $this->assertEquals(new Price('5.00', 'USD'), $resolved_price);
+
+    $third_user = $this->createUser();
+    $third_user->addRole($second_role->id());
+    $third_user->save();
+
+    $context = new Context($third_user, $this->store);
     $resolved_price = $resolver->resolve($this->variation, 1, $context);
     $this->assertEquals(new Price('5.00', 'USD'), $resolved_price);
   }

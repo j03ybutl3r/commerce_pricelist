@@ -70,23 +70,23 @@ interface PriceListInterface extends ContentEntityInterface, EntityChangedInterf
   public function setCustomerId($uid);
 
   /**
-   * Gets the customer role.
+   * Gets the customer roles.
    *
-   * @return string|null
-   *   The customer role ID, or NULL if the price list is not limited to a
-   *   specific customer role.
+   * @return string[]|null
+   *   The customer role IDs, or NULL if the price list is not limited to
+   *   specific customer roles.
    */
-  public function getCustomerRole();
+  public function getCustomerRoles();
 
   /**
-   * Sets the customer role.
+   * Sets the customer roles.
    *
-   * @param string $rid
-   *   The role ID.
+   * @param string[] $rids
+   *   The role IDs.
    *
    * @return $this
    */
-  public function setCustomerRole($rid);
+  public function setCustomerRoles(array $rids);
 
   /**
    * Gets the start date.
