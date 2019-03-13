@@ -240,7 +240,7 @@ class PriceListItemImportForm extends FormBase {
     ];
     $batch['operations'][] = [
       [get_class($this), 'batchDeleteUploadedFile'],
-      [$file->getFileUri()],
+      [$file->id()],
     ];
 
     batch_set($batch);
@@ -404,8 +404,10 @@ class PriceListItemImportForm extends FormBase {
    * @param array $context
    *   The batch context.
    */
-  public static function batchDeleteUploadedFile($file_uri, array &$context) {
-    file_unmanaged_delete($file_uri);
+  public static function batchDeleteUploadedFile($file_id, array &$context) {
+    $file_storage = \Drupal::entityTypeManager()->getStorage('file');
+    $file = $file_storage->load($file_id);
+    $file->delete();
     $context['message'] = t('Removing uploaded CSV.');
     $context['finished'] = 1;
   }
