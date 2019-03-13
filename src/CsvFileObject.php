@@ -42,11 +42,20 @@ class CsvFileObject extends \SplFileObject {
    *   Whether the loaded file has a header row.
    * @param array $header_mapping
    *   The header mapping (real_column => mapped_column).
+   * @param array $csv_options
+   *   The CSV options (delimiter, enclosure, escape).
    */
-  public function __construct($file_name, $has_header = FALSE, array $header_mapping = []) {
+  public function __construct($file_name, $has_header = FALSE, array $header_mapping = [], array $csv_options = []) {
     parent::__construct($file_name);
 
     $this->setFlags(self::READ_CSV | self::READ_AHEAD | self::DROP_NEW_LINE | self::SKIP_EMPTY);
+    $options = array_merge([
+      'delimiter' => ',',
+      'enclosure' => '"',
+      'escape' => '\\',
+    ], $csv_options);
+    $this->setCsvControl($options['delimiter'], $options['enclosure'], $options['escape']);
+
     $this->hasHeader = $has_header;
     $this->headerMapping = $header_mapping;
     if ($this->hasHeader) {

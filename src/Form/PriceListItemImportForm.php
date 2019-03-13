@@ -155,6 +155,30 @@ class PriceListItemImportForm extends FormBase {
       '#default_value' => 'currency_code',
       '#required' => TRUE,
     ];
+
+    $form['options'] = [
+      '#type' => 'details',
+      '#title' => $this->t('CSV file options'),
+      '#collapsible' => TRUE,
+      '#open' => FALSE,
+    ];
+    $form['options']['delimiter'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Delimiter'),
+      '#size' => 5,
+      '#maxlength' => 1,
+      '#default_value' => ',',
+      '#required' => TRUE,
+    ];
+    $form['options']['enclosure'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Enclosure'),
+      '#size' => 5,
+      '#maxlength' => 1,
+      '#default_value' => '"',
+      '#required' => TRUE,
+    ];
+
     $form['delete_existing'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('Delete all prices in this price list prior to import.'),
@@ -210,6 +234,7 @@ class PriceListItemImportForm extends FormBase {
       [
         $file->getFileUri(),
         $values['mapping'],
+        $values['options'],
         $form_state->get('price_list_id'),
       ],
     ];
@@ -277,12 +302,14 @@ class PriceListItemImportForm extends FormBase {
    *   The CSV file URI.
    * @param array $mapping
    *   The mapping options.
+   * @param array $csv_options
+   *   The CSV options.
    * @param string $price_list_id
    *   The price list ID.
    * @param array $context
    *   The batch context.
    */
-  public static function batchProcess($file_uri, array $mapping, $price_list_id, array &$context) {
+  public static function batchProcess($file_uri, array $mapping, array $csv_options, $price_list_id, array &$context) {
     $entity_type_manager = \Drupal::entityTypeManager();
     $price_list_storage = $entity_type_manager->getStorage('commerce_pricelist');
     $price_list_item_storage = $entity_type_manager->getStorage('commerce_pricelist_item');
@@ -295,7 +322,7 @@ class PriceListItemImportForm extends FormBase {
       $mapping['list_price_column'] => 'list_price',
       $mapping['price_column'] => 'price',
       $mapping['currency_column'] => 'currency_code',
-    ]);
+    ], $csv_options);
     if (empty($context['sandbox'])) {
       $context['sandbox']['import_total'] = (int) $csv->count();
       $context['sandbox']['import_count'] = 0;
