@@ -26,6 +26,35 @@ function commerce_pricelist_help($route_name, RouteMatchInterface $route_match) 
 }
 
 /**
+ * Implements hook_entity_delete().
+ */
+function commerce_pricelist_entity_delete(EntityInterface $entity) {
+  if ($entity->getEntityType()->entityClassImplements(PurchasableEntityInterface::class)) {
+    // Get the map info between purchased entity type and price list item type.
+    $price_list_item_type_ids = [];
+    $price_list_item_types = \Drupal::entityTypeManager()->getStorage('price_list_item_type')->loadByProperties();
+    /** @var \Drupal\commerce_pricelist\Entity\PriceListItemType $price_list_item_type */
+    foreach ($price_list_item_types as $price_list_item_type_id => $price_list_item_type) {
+      $purchased_entity_type_id = $price_list_item_type->getPurchasableEntityTypeId();
+      $price_list_item_type_ids[$purchased_entity_type_id] = $price_list_item_type_id;
+    }
+
+    // A purchasable entity was deleted. Delete all of its price list items.
+    $price_list_item_storage = \Drupal::entityTypeManager()->getStorage('price_list_item');
+    $query = $price_list_item_storage->getQuery();
+    $query->condition('type', $price_list_item_type_ids[$entity->getEntityTypeId()]);
+    $query->condition('purchased_entity', $entity->id());
+    $result = $query->execute();
+    if (!empty($result)) {
+      // @todo This can crash due to there potentially being thousands of items.
+      $price_list_items = $price_list_item_storage->loadMultiple($result);
+      $price_list_item_storage->delete($price_list_items);
+    }
+  }
+}
+
+
+/**
  * Implements hook_entity_update().
  */
 function commerce_pricelist_entity_update(EntityInterface $entity) {
