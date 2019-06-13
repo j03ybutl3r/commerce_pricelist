@@ -32,7 +32,11 @@ use Drupal\user\UserInterface;
  *       "default" = "Drupal\commerce_pricelist\Form\PriceListForm",
  *       "add" = "Drupal\commerce_pricelist\Form\PriceListForm",
  *       "edit" = "Drupal\commerce_pricelist\Form\PriceListForm",
+ *       "duplicate" = "Drupal\commerce_pricelist\Form\PriceListForm",
  *       "delete" = "Drupal\Core\Entity\ContentEntityDeleteForm",
+ *     },
+ *     "local_task_provider" = {
+ *       "default" = "Drupal\entity\Menu\DefaultEntityLocalTaskProvider",
  *     },
  *     "route_provider" = {
  *       "default" = "Drupal\entity\Routing\AdminHtmlRouteProvider",
@@ -53,6 +57,7 @@ use Drupal\user\UserInterface;
  *     "add-page" = "/price-list/add",
  *     "add-form" = "/price-list/add/{type}",
  *     "edit-form" = "/price-list/{commerce_pricelist}/edit",
+ *     "duplicate-form" = "/price-list/{commerce_pricelist}/duplicate",
  *     "delete-form" = "/price-list/{commerce_pricelist}/delete",
  *     "delete-multiple-form" = "/admin/commerce/price-lists/delete",
  *     "collection" = "/admin/commerce/price-lists",

@@ -33,7 +33,11 @@ use Drupal\Core\Entity\EntityTypeInterface;
  *     "form" = {
  *       "add" = "Drupal\commerce_pricelist\Form\PriceListItemForm",
  *       "edit" = "Drupal\commerce_pricelist\Form\PriceListItemForm",
+ *       "duplicate" = "Drupal\commerce_pricelist\Form\PriceListItemForm",
  *       "delete" = "Drupal\commerce_pricelist\Form\PriceListItemDeleteForm",
+ *     },
+ *     "local_task_provider" = {
+ *       "default" = "Drupal\entity\Menu\DefaultEntityLocalTaskProvider",
  *     },
  *     "route_provider" = {
  *       "default" = "Drupal\commerce_pricelist\PriceListItemRouteProvider",
@@ -51,6 +55,7 @@ use Drupal\Core\Entity\EntityTypeInterface;
  *   links = {
  *     "add-form" = "/price-list/{commerce_pricelist}/prices/add",
  *     "edit-form" = "/price-list/{commerce_pricelist}/prices/{commerce_pricelist_item}/edit",
+ *     "duplicate-form" = "/price-list/{commerce_pricelist}/prices/{commerce_pricelist_item}/duplicate",
  *     "delete-form" = "/price-list/{commerce_pricelist}/prices/{commerce_pricelist_item}/delete",
  *     "collection" = "/price-list/{commerce_pricelist}/prices",
  *   },

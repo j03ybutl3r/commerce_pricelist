@@ -31,9 +31,9 @@ class PriceListTest extends CommerceBrowserTestBase {
   }
 
   /**
-   * Tests creating a price list.
+   * Tests adding a price list.
    */
-  public function testCreatePriceList() {
+  public function testAdd() {
     $this->drupalGet(Url::fromRoute('entity.commerce_pricelist.collection')->toString());
     $this->clickLink('Add price list');
 
@@ -59,7 +59,7 @@ class PriceListTest extends CommerceBrowserTestBase {
   /**
    * Tests editing a price list.
    */
-  public function testEditPriceList() {
+  public function testEdit() {
     $roles = $this->adminUser->getRoles();
     $role = reset($roles);
     $price_list = $this->createEntity('commerce_pricelist', [
@@ -72,6 +72,7 @@ class PriceListTest extends CommerceBrowserTestBase {
     $page = $this->getSession()->getPage();
     $tabs = $page->find('xpath', '//nav');
     $this->assertNotEmpty($tabs->findLink('Edit'));
+    $this->assertNotEmpty($tabs->findLink('Duplicate'));
     $this->assertNotEmpty($tabs->findLink('Prices'));
     $this->submitForm([
       'name[0][value]' => 'Random list',
@@ -81,6 +82,7 @@ class PriceListTest extends CommerceBrowserTestBase {
       // The role should not be persisted due to the customer being used.
       "customer_roles[$role]" => $role,
     ], 'Save');
+    $this->assertSession()->pageTextContains('Saved the Random list price list.');
 
     \Drupal::service('entity_type.manager')->getStorage('commerce_pricelist')->resetCache([$price_list->id()]);
     $price_list = PriceList::load(1);
@@ -91,9 +93,48 @@ class PriceListTest extends CommerceBrowserTestBase {
   }
 
   /**
+   * Tests duplicating a price list.
+   */
+  public function testDuplicate() {
+    $roles = $this->adminUser->getRoles();
+    $role = reset($roles);
+    $price_list = $this->createEntity('commerce_pricelist', [
+      'type' => 'commerce_product_variation',
+      'name' => 'Random list',
+      'start_date' => '2018-07-07',
+      'customer_roles' => [$role],
+    ]);
+    $this->drupalGet($price_list->toUrl('duplicate-form'));
+    $this->assertSession()->pageTextContains('Duplicate Random list');
+    $page = $this->getSession()->getPage();
+    $tabs = $page->find('xpath', '//nav');
+    $this->assertNotEmpty($tabs->findLink('Edit'));
+    $this->assertNotEmpty($tabs->findLink('Duplicate'));
+    $this->assertNotEmpty($tabs->findLink('Prices'));
+    $this->submitForm([
+      'name[0][value]' => 'Random list2',
+      'start_date[0][value][date]' => '2018-08-08',
+    ], 'Save');
+    $this->assertSession()->pageTextContains('Saved the Random list2 price list.');
+
+    \Drupal::service('entity_type.manager')->getStorage('commerce_pricelist')->resetCache([$price_list->id()]);
+    // Confirm that the original price list is unchanged.
+    $price_list = PriceList::load(1);
+    $this->assertEquals('Random list', $price_list->getName());
+    $this->assertEquals('2018-07-07', $price_list->getStartDate()->format('Y-m-d'));
+    $this->assertEquals([$role], $price_list->getCustomerRoles());
+
+    // Confirm that the new price list has the expected data.
+    $price_list = PriceList::load(2);
+    $this->assertEquals('Random list2', $price_list->getName());
+    $this->assertEquals('2018-08-08', $price_list->getStartDate()->format('Y-m-d'));
+    $this->assertEquals([$role], $price_list->getCustomerRoles());
+  }
+
+  /**
    * Tests deleting a price list.
    */
-  public function testDeletePriceList() {
+  public function testDelete() {
     $price_list = $this->createEntity('commerce_pricelist', [
       'type' => 'commerce_product_variation',
       'name' => $this->randomMachineName(8),

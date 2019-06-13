@@ -85,9 +85,9 @@ class PriceListItemTest extends CommerceBrowserTestBase {
   }
 
   /**
-   * Tests creating a price list item.
+   * Tests adding a price list item.
    */
-  public function testCreatePriceListItem() {
+  public function testAdd() {
     $collection_url = Url::fromRoute('entity.commerce_pricelist_item.collection', [
       'commerce_pricelist' => $this->priceList->id(),
     ]);
@@ -111,7 +111,7 @@ class PriceListItemTest extends CommerceBrowserTestBase {
   /**
    * Tests editing a price list item.
    */
-  public function testEditPriceListItem() {
+  public function testEdit() {
     $price_list_item = $this->createEntity('commerce_pricelist_item', [
       'type' => 'commerce_product_variation',
       'price_list_id' => $this->priceList->id(),
@@ -135,9 +135,44 @@ class PriceListItemTest extends CommerceBrowserTestBase {
   }
 
   /**
+   * Tests duplicating a price list item.
+   */
+  public function testDuplicate() {
+    $price_list_item = $this->createEntity('commerce_pricelist_item', [
+      'type' => 'commerce_product_variation',
+      'price_list_id' => $this->priceList->id(),
+      'purchasable_entity' => $this->firstVariation->id(),
+      'quantity' => '10',
+      'price' => new Price('50', 'USD'),
+    ]);
+    $this->drupalGet($price_list_item->toUrl('duplicate-form'));
+    $this->assertSession()->pageTextContains('Duplicate Red shirt: $50.00');
+    $this->submitForm([
+      'quantity[0][value]' => '20',
+      'price[0][number]' => 25,
+    ], 'Save');
+    $this->assertSession()->pageTextContains('Saved the Red shirt: $25.00 price.');
+
+    \Drupal::service('entity_type.manager')->getStorage('commerce_pricelist_item')->resetCache([$price_list_item->id()]);
+    // Confirm that the original price list item is unchanged.
+    $price_list_item = PriceListItem::load(1);
+    $this->assertEquals($this->priceList->id(), $price_list_item->getPriceListId());
+    $this->assertEquals($this->firstVariation->id(), $price_list_item->getPurchasableEntityId());
+    $this->assertEquals('10', $price_list_item->getQuantity());
+    $this->assertEquals(new Price('50', 'USD'), $price_list_item->getPrice());
+
+    // Confirm that the new price list item has the expected data.
+    $price_list_item = PriceListItem::load(2);
+    $this->assertEquals($this->priceList->id(), $price_list_item->getPriceListId());
+    $this->assertEquals($this->firstVariation->id(), $price_list_item->getPurchasableEntityId());
+    $this->assertEquals('20', $price_list_item->getQuantity());
+    $this->assertEquals(new Price('25', 'USD'), $price_list_item->getPrice());
+  }
+
+  /**
    * Tests deleting a price list item.
    */
-  public function testDeletePriceListItem() {
+  public function testDelete() {
     $price_list_item = $this->createEntity('commerce_pricelist_item', [
       'type' => 'commerce_product_variation',
       'price_list_id' => $this->priceList->id(),

@@ -5,17 +5,22 @@ namespace Drupal\commerce_pricelist\Form;
 use Drupal\Core\Entity\ContentEntityForm;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\entity\Form\EntityDuplicateFormTrait;
 
 class PriceListItemForm extends ContentEntityForm {
+
+  use EntityDuplicateFormTrait;
 
   /**
    * {@inheritdoc}
    */
   public function form(array $form, FormStateInterface $form_state) {
     $form = parent::form($form, $form_state);
-    // The default form title is wrong because EntityController::doGetEntity()
+    // The default edit title is wrong because EntityController::doGetEntity()
     // takes the price list entity instead of the price list item entity.
-    $form['#title'] = $this->t('Edit %label', ['%label' => $this->entity->label()]);
+    if ($this->operation == 'edit') {
+      $form['#title'] = $this->t('Edit %label', ['%label' => $this->entity->label()]);
+    }
 
     return $form;
   }
@@ -45,6 +50,7 @@ class PriceListItemForm extends ContentEntityForm {
    */
   public function save(array $form, FormStateInterface $form_state) {
     $this->entity->save();
+    $this->postSave($this->entity, $this->operation);
     $this->messenger()->addMessage($this->t('Saved the %label price.', ['%label' => $this->entity->label()]));
     $form_state->setRedirectUrl($this->entity->toUrl('collection'));
   }
