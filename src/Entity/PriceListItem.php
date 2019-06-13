@@ -5,6 +5,8 @@ namespace Drupal\commerce_pricelist\Entity;
 use Drupal\commerce\PurchasableEntityInterface;
 use Drupal\commerce_price\Price;
 use Drupal\commerce\Entity\CommerceContentEntityBase;
+use Drupal\Core\Entity\EntityMalformedException;
+use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Entity\EntityChangedTrait;
 use Drupal\Core\Entity\EntityTypeInterface;
@@ -26,7 +28,6 @@ use Drupal\Core\Entity\EntityTypeInterface;
  *   ),
  *   handlers = {
  *     "list_builder" = "Drupal\commerce_pricelist\PriceListItemListBuilder",
- *     "storage" = "Drupal\commerce_pricelist\PriceListItemStorage",
  *     "view_builder" = "Drupal\Core\Entity\EntityViewBuilder",
  *     "views_data" = "Drupal\views\EntityViewsData",
  *     "form" = {
@@ -185,6 +186,18 @@ class PriceListItem extends CommerceContentEntityBase implements PriceListItemIn
   public function setEnabled($enabled) {
     $this->set('status', (bool) $enabled);
     return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function preSave(EntityStorageInterface $storage) {
+    parent::preSave($storage);
+
+    $price_list_id = $this->getPriceListId();
+    if (empty($price_list_id)) {
+      throw new EntityMalformedException(sprintf('Required price list item field "price_list_id" is empty.'));
+    }
   }
 
   /**
