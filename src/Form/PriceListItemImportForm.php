@@ -5,6 +5,7 @@ namespace Drupal\commerce_pricelist\Form;
 use Drupal\commerce_price\Price;
 use Drupal\commerce_pricelist\CsvFileObject;
 use Drupal\commerce_pricelist\Entity\PriceListInterface;
+use Drupal\commerce_pricelist\Entity\PriceListItemInterface;
 use Drupal\Core\Entity\EntityFieldManagerInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormBase;
@@ -236,6 +237,7 @@ class PriceListItemImportForm extends FormBase {
         $values['mapping'],
         $values['options'],
         $form_state->get('price_list_id'),
+        (bool) $values['delete_existing'],
       ],
     ];
     $batch['operations'][] = [
@@ -306,10 +308,12 @@ class PriceListItemImportForm extends FormBase {
    *   The CSV options.
    * @param string $price_list_id
    *   The price list ID.
+   * @param bool $delete_existing
+   *   The "delete existing" flag.
    * @param array $context
    *   The batch context.
    */
-  public static function batchProcess($file_uri, array $mapping, array $csv_options, $price_list_id, array &$context) {
+  public static function batchProcess($file_uri, array $mapping, array $csv_options, $price_list_id, $delete_existing, array &$context) {
     $entity_type_manager = \Drupal::entityTypeManager();
     $price_list_storage = $entity_type_manager->getStorage('commerce_pricelist');
     $price_list_item_storage = $entity_type_manager->getStorage('commerce_pricelist_item');
@@ -327,6 +331,7 @@ class PriceListItemImportForm extends FormBase {
       $context['sandbox']['import_total'] = (int) $csv->count();
       $context['sandbox']['import_count'] = 0;
       $context['results']['import_created'] = 0;
+      $context['results']['import_updated'] = 0;
       $context['results']['import_skipped'] = 0;
     }
     // The file is invalid, stop here.
@@ -337,11 +342,11 @@ class PriceListItemImportForm extends FormBase {
     }
 
     $import_total = $context['sandbox']['import_total'];
-    $created = &$context['sandbox']['import_count'];
-    $remaining = $import_total - $created;
+    $import_count = &$context['sandbox']['import_count'];
+    $remaining = $import_total - $import_count;
     $limit = ($remaining < self::BATCH_SIZE) ? $remaining : self::BATCH_SIZE;
 
-    $csv->seek($created + 1);
+    $csv->seek($import_count + 1);
     for ($i = 0; $i < $limit; $i++) {
       $row = $csv->current();
       $row = array_map('trim', $row);
@@ -349,7 +354,7 @@ class PriceListItemImportForm extends FormBase {
       foreach (['purchasable_entity', 'price', 'currency_code'] as $required_column) {
         if (empty($row[$required_column])) {
           $context['results']['import_skipped']++;
-          $created++;
+          $import_count++;
           $csv->next();
           continue 2;
         }
@@ -362,7 +367,7 @@ class PriceListItemImportForm extends FormBase {
       // Skip the row if the purchasable entity could not be loaded.
       if (!$purchasable_entity) {
         $context['results']['import_skipped']++;
-        $created++;
+        $import_count++;
         $csv->next();
         continue;
       }
@@ -375,32 +380,57 @@ class PriceListItemImportForm extends FormBase {
       }
       $price = new Price($row['price'], $currency_code);
 
-      $price_list_item = $price_list_item_storage->create([
-        'type' => $price_list->bundle(),
-        'price_list_id' => $price_list->id(),
-        'purchasable_entity' => $purchasable_entity->id(),
-        'quantity' => $quantity,
-        'list_price' => $list_price,
-        'price' => $price,
-      ]);
+      // If existing price list items weren't deleted before the import,
+      // try to find one to update.
+      $price_list_item = NULL;
+      if (!$delete_existing) {
+        $result = $price_list_item_storage->getQuery()
+          ->condition('type', $price_list->bundle())
+          ->condition('price_list_id', $price_list->id())
+          ->condition('purchasable_entity', $purchasable_entity->id())
+          ->condition('quantity', $quantity)
+          ->execute();
+
+        if (!empty($result)) {
+          $existing_price_list_item_id = reset($result);
+          $price_list_item = $price_list_item_storage->load($existing_price_list_item_id);
+          assert($price_list_item instanceof PriceListItemInterface);
+          $price_list_item->setListPrice($list_price);
+          $price_list_item->setPrice($price);
+        }
+      }
+
+      if (is_null($price_list_item)) {
+        // No price list item was found and updated, create a new one.
+        $price_list_item = $price_list_item_storage->create([
+          'type' => $price_list->bundle(),
+          'price_list_id' => $price_list->id(),
+          'purchasable_entity' => $purchasable_entity->id(),
+          'quantity' => $quantity,
+          'list_price' => $list_price,
+          'price' => $price,
+        ]);
+      }
+
+      $import_type = $price_list_item->isNew() ? 'created' : 'updated';
       $price_list_item->save();
 
-      $created++;
-      $context['results']['import_created']++;
+      $import_count++;
+      $context['results']['import_' . $import_type]++;
       $csv->next();
     }
     $context['message'] = t('Importing @created of @import_total price list items', [
-      '@created' => $created,
+      '@created' => $import_count,
       '@import_total' => $import_total,
     ]);
-    $context['finished'] = $created / $import_total;
+    $context['finished'] = $import_count / $import_total;
   }
 
   /**
    * Batch process to delete the uploaded CSV.
    *
-   * @param string $file_uri
-   *   The CSV file URI.
+   * @param int $file_id
+   *   The file ID.
    * @param array $context
    *   The batch context.
    */
@@ -441,6 +471,13 @@ class PriceListItemImportForm extends FormBase {
           $results['import_created'],
           'Imported 1 price.',
           'Imported @count prices.'
+        ));
+      }
+      if (!empty($results['import_updated'])) {
+        \Drupal::messenger()->addMessage(\Drupal::translation()->formatPlural(
+          $results['import_updated'],
+          'Updated 1 price.',
+          'Updated @count prices.'
         ));
       }
       if (!empty($results['import_skipped'])) {
