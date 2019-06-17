@@ -5,6 +5,7 @@ namespace Drupal\commerce_pricelist\Entity;
 use Drupal\commerce\PurchasableEntityInterface;
 use Drupal\commerce_price\Price;
 use Drupal\commerce\Entity\CommerceContentEntityBase;
+use Drupal\Core\Cache\Cache;
 use Drupal\Core\Entity\EntityMalformedException;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
@@ -202,6 +203,18 @@ class PriceListItem extends CommerceContentEntityBase implements PriceListItemIn
     $price_list_id = $this->getPriceListId();
     if (empty($price_list_id)) {
       throw new EntityMalformedException(sprintf('Required price list item field "price_list_id" is empty.'));
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function postSave(EntityStorageInterface $storage, $update = TRUE) {
+    parent::postSave($storage, $update);
+
+    if ($purchasable_entity = $this->getPurchasableEntity()) {
+      // Invalidate caches to allow the new pricing to come into effect.
+      Cache::invalidateTags($purchasable_entity->getCacheTagsToInvalidate());
     }
   }
 
