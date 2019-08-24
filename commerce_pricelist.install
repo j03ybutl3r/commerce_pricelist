@@ -52,4 +52,3 @@ function commerce_pricelist_update_8201() {
     ]);
   $definition_update_manager->uninstallFieldStorageDefinition($storage_definition);
 }
-
