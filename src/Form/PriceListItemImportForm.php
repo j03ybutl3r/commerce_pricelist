@@ -12,6 +12,7 @@ use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\Component\Utility\Environment;
 
 class PriceListItemImportForm extends FormBase {
 
@@ -102,7 +103,7 @@ class PriceListItemImportForm extends FormBase {
       ]),
       '#upload_validators' => [
         'file_validate_extensions' => ['csv'],
-        'file_validate_size' => [file_upload_max_size()],
+        'file_validate_size' => [Environment::getUploadMaxSize()],
       ],
       '#upload_location' => 'temporary://',
     ];
