@@ -111,3 +111,22 @@ function template_preprocess_commerce_pricelist(array &$variables) {
     $variables['price_list'][$key] = $variables['elements'][$key];
   }
 }
+
+/**
+ * Implements hook_file_download().
+ */
+function commerce_pricelist_file_download($uri) {
+  // Check if the file being downloaded is a price list CSV export.
+  $scheme = \Drupal::service('file_system')->uriScheme($uri);
+  $target = file_uri_target($uri);
+  if ($scheme == 'temporary' && strpos($target, 'pricelist-') === 0) {
+    $current_user = \Drupal::currentUser();
+    if (!$current_user->hasPermission('administer commerce_pricelist')) {
+      return -1;
+    }
+    return [
+      'Content-disposition' => 'attachment; filename="' . $target .'"',
+      'Content-type' => 'text/csv;charset=utf-8',
+    ];
+  }
+}

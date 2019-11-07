@@ -15,3 +15,9 @@ entity.commerce_pricelist_item.import_form:
   title: 'Import prices'
   appears_on:
     - entity.commerce_pricelist_item.collection
+
+entity.commerce_pricelist_item.export_form:
+  route_name: entity.commerce_pricelist_item.export_form
+  title: 'Export prices'
+  appears_on:
+    - entity.commerce_pricelist_item.collection

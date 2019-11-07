@@ -3,6 +3,7 @@
 namespace Drupal\Tests\commerce_pricelist\Functional;
 
 use Drupal\commerce_price\Price;
+use Drupal\commerce_pricelist\CsvFileObject;
 use Drupal\commerce_pricelist\Entity\PriceListItem;
 use Drupal\commerce_product\Entity\ProductVariationType;
 use Drupal\Core\Url;
@@ -336,6 +337,56 @@ class PriceListItemTest extends CommerceBrowserTestBase {
     $this->assertEquals(new Price('89.99', 'USD'), $price_list_item->getListPrice());
     $this->assertEquals(new Price('79.99', 'USD'), $price_list_item->getPrice());
     $this->assertTrue($price_list_item->isEnabled());
+  }
+
+  /**
+   * Tests exporting price list items.
+   */
+  public function testExportPriceListItems() {
+    // Create 20 price list items for each of our 2 test variations.
+    $expected_rows = [];
+    foreach ([$this->firstVariation, $this->secondVariation] as $variation) {
+      for ($i = 1; $i <= 20; $i++) {
+        $price_list_item = $this->createEntity('commerce_pricelist_item', [
+          'type' => 'commerce_product_variation',
+          'price_list_id' => $this->priceList->id(),
+          'purchasable_entity' => $variation->id(),
+          'quantity' => $i,
+          'price' => new Price('666', 'USD'),
+        ]);
+        $expected_rows[] = [
+          'purchasable_entity' => $variation->getSku(),
+          'quantity' => $price_list_item->getQuantity(),
+          'list_price' => '',
+          'price' => $price_list_item->getPrice()->getNumber(),
+          'currency_code' => 'USD',
+        ];
+      }
+    }
+    $collection_url = Url::fromRoute('entity.commerce_pricelist_item.collection', [
+      'commerce_pricelist' => $this->priceList->id(),
+    ]);
+    $this->drupalGet($collection_url->toString());
+    $this->clickLink('Export prices');
+    $this->submitForm([
+      'mapping[quantity_column]' => 'qty',
+      'mapping[list_price_column]' => 'msrp',
+      'mapping[currency_column]' => 'currency',
+    ], 'Export prices');
+    $this->assertSession()->pageTextContains('Exported 40 prices.');
+    $csv = new CsvFileObject('temporary://pricelist-1-prices.csv', TRUE, [
+     'product_variation' => 'purchasable_entity',
+      'qty' => 'quantity',
+      'msrp' => 'list_price',
+      'price' => 'price',
+      'currency' => 'currency_code',
+    ]);
+    foreach ($expected_rows as $expected_row) {
+      $row = $csv->current();
+      $this->assertEquals($expected_row, $row);
+      $csv->next();
+    }
+    $this->assertEquals($csv->count(), 40);
   }
 
 }
