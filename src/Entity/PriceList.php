@@ -45,7 +45,6 @@ use Drupal\user\UserInterface;
  *   },
  *   admin_permission = "administer commerce_pricelist",
  *   base_table = "commerce_pricelist",
- *   data_table = "commerce_pricelist_field_data",
  *   entity_keys = {
  *     "id" = "id",
  *     "bundle" = "type",

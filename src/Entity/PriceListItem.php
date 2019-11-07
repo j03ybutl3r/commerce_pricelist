@@ -46,7 +46,6 @@ use Drupal\Core\Entity\EntityTypeInterface;
  *   },
  *   admin_permission = "administer commerce_pricelist",
  *   base_table = "commerce_pricelist_item",
- *   data_table = "commerce_pricelist_item_field_data",
  *   entity_keys = {
  *     "id" = "id",
  *     "bundle" = "type",
