@@ -125,7 +125,7 @@ function commerce_pricelist_file_download($uri) {
       return -1;
     }
     return [
-      'Content-disposition' => 'attachment; filename="' . $target .'"',
+      'Content-disposition' => 'attachment; filename="' . $target . '"',
       'Content-type' => 'text/csv;charset=utf-8',
     ];
   }

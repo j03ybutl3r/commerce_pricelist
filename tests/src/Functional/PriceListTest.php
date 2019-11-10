@@ -69,11 +69,12 @@ class PriceListTest extends CommerceBrowserTestBase {
       'customer_role' => $role,
     ]);
     $this->drupalGet($price_list->toUrl('edit-form'));
-    $page = $this->getSession()->getPage();
-    $tabs = $page->find('xpath', '//nav');
-    $this->assertNotEmpty($tabs->findLink('Edit'));
-    $this->assertNotEmpty($tabs->findLink('Duplicate'));
-    $this->assertNotEmpty($tabs->findLink('Prices'));
+    $prices_tab_uri = Url::fromRoute('entity.commerce_pricelist_item.collection', [
+      'commerce_pricelist' => $price_list->id(),
+    ])->toString();
+    $this->assertSession()->linkByHrefExists($price_list->toUrl('edit-form')->toString());
+    $this->assertSession()->linkByHrefExists($price_list->toUrl('duplicate-form')->toString());
+    $this->assertSession()->linkByHrefExists($prices_tab_uri);
     $this->submitForm([
       'name[0][value]' => 'Random list',
       'start_date[0][value][date]' => '2018-08-08',
@@ -106,11 +107,12 @@ class PriceListTest extends CommerceBrowserTestBase {
     ]);
     $this->drupalGet($price_list->toUrl('duplicate-form'));
     $this->assertSession()->pageTextContains('Duplicate Random list');
-    $page = $this->getSession()->getPage();
-    $tabs = $page->find('xpath', '//nav');
-    $this->assertNotEmpty($tabs->findLink('Edit'));
-    $this->assertNotEmpty($tabs->findLink('Duplicate'));
-    $this->assertNotEmpty($tabs->findLink('Prices'));
+    $prices_tab_uri = Url::fromRoute('entity.commerce_pricelist_item.collection', [
+      'commerce_pricelist' => $price_list->id(),
+    ])->toString();
+    $this->assertSession()->linkByHrefExists($price_list->toUrl('edit-form')->toString());
+    $this->assertSession()->linkByHrefExists($price_list->toUrl('duplicate-form')->toString());
+    $this->assertSession()->linkByHrefExists($prices_tab_uri);
     $this->submitForm([
       'name[0][value]' => 'Random list2',
       'start_date[0][value][date]' => '2018-08-08',

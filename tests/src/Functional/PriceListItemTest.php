@@ -375,7 +375,7 @@ class PriceListItemTest extends CommerceBrowserTestBase {
     ], 'Export prices');
     $this->assertSession()->pageTextContains('Exported 40 prices.');
     $csv = new CsvFileObject('temporary://pricelist-1-prices.csv', TRUE, [
-     'product_variation' => 'purchasable_entity',
+      'product_variation' => 'purchasable_entity',
       'qty' => 'quantity',
       'msrp' => 'list_price',
       'price' => 'price',
