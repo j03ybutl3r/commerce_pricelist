@@ -5,11 +5,15 @@
  * Allows defining prices for specific stores, customers, quantities.
  */
 
+use Drupal\commerce\EntityHelper;
 use Drupal\commerce\PurchasableEntityInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\Element;
 use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\Url;
+use Drupal\views\ViewExecutable;
 
 /**
  * Implements hook_help().
@@ -129,4 +133,79 @@ function commerce_pricelist_file_download($uri) {
       'Content-type' => 'text/csv;charset=utf-8',
     ];
   }
+}
+
+/**
+ * Implements hook_local_tasks_alter().
+ */
+function commerce_pricelist_local_tasks_alter(&$local_tasks) {
+  // This is needed because the "base_route" cannot be guessed by the logic
+  // in \Drupal\views\Plugin\Derative\ViewsLocalTask::alterLocalTasks().
+  // Without the following code, the "prices" local task isn't added because
+  // of the missing "base_route".
+  if (isset($local_tasks['views_view:view.commerce_product_variation_prices.page'])) {
+    $local_tasks['views_view:view.commerce_product_variation_prices.page']['base_route'] = 'entity.commerce_product_variation.edit_form';
+  }
+}
+
+/**
+ * Implements hook_entity_operation().
+ */
+function commerce_pricelist_entity_operation(EntityInterface $entity) {
+  $current_user = \Drupal::currentUser();
+  if ($entity->getEntityTypeId() !== 'commerce_product_variation' ||
+    !$current_user->hasPermission('administer commerce_pricelist')) {
+    return;
+  }
+  $operations = [];
+  $operations['prices'] = [
+    'title' => t('Prices'),
+    'url' => Url::fromRoute('view.commerce_product_variation_prices.page', [
+      'commerce_product_variation' => $entity->id(),
+      'commerce_product' => $entity->getProduct()->id(),
+    ]),
+    'weight' => 50,
+  ];
+  return $operations;
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter() for 'views_exposed_form'.
+ *
+ * Turn the pricelist filter into a dropdown.
+ */
+function commerce_pricelist_form_views_exposed_form_alter(&$form, FormStateInterface $form_state) {
+  // Retrieve the view object.
+  $storage = $form_state->getStorage();
+  if (!isset($storage['view'])) {
+    return;
+  }
+  $view = $storage['view'];
+  // Make sure we're altering the right view.
+  $view_eligible = $view->id() === 'commerce_product_variation_prices' && $view->current_display === 'page';
+  if (!($view instanceof ViewExecutable) || !$view_eligible || !isset($form['price_list_id'])) {
+    return;
+  }
+  $price_list_filter = &$form['price_list_id'];
+  $entity_type_manager = \Drupal::entityTypeManager();
+  $price_list_storage = $entity_type_manager->getStorage('commerce_pricelist');
+  $query = $price_list_storage->getQuery();
+  $query
+    ->condition('type', 'commerce_product_variation')
+    ->sort('weight', 'ASC')
+    ->sort('id', 'DESC');
+  $count_query = clone $query;
+  $price_lists_count = (int) $count_query->count()->execute();
+
+  // Only offer a price list dropdown if there are less than 25 price lists.
+  if ($price_lists_count === 0 ||$price_lists_count > 25) {
+    return;
+  }
+  $price_list_ids = $query->execute();
+  $price_lists = $price_list_storage->loadMultiple($price_list_ids);
+  $price_list_filter['#type'] = 'select';
+  $price_list_filter['#options'] = EntityHelper::extractLabels($price_lists);
+  $price_list_filter['#empty_option'] = t('- None -');
+  $price_list_filter['#multiple'] = FALSE;
+  unset($price_list_filter['#size']);
 }

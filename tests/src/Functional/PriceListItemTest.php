@@ -52,6 +52,7 @@ class PriceListItemTest extends CommerceBrowserTestBase {
   protected function getAdministratorPermissions() {
     return array_merge([
       'administer commerce_pricelist',
+      'administer commerce_product',
     ], parent::getAdministratorPermissions());
   }
 
@@ -82,6 +83,12 @@ class PriceListItemTest extends CommerceBrowserTestBase {
       'sku' => 'BLUE-SHIRT',
       'title' => 'Blue shirt',
       'price' => new Price('11.00', 'USD'),
+    ]);
+    $this->createEntity('commerce_product', [
+      'type' => 'default',
+      'title' => $this->randomMachineName(),
+      'stores' => [$this->store],
+      'variations' => [$this->firstVariation, $this->secondVariation],
     ]);
   }
 
@@ -387,6 +394,81 @@ class PriceListItemTest extends CommerceBrowserTestBase {
       $csv->next();
     }
     $this->assertEquals($csv->count(), 40);
+  }
+
+  /**
+   * Tests the "Prices" tab and operation for variations.
+   */
+  public function testPricesTabAndOperation() {
+    $this->drupalGet($this->firstVariation->toUrl('collection'));
+    $this->assertSession()->linkExists('Prices');
+    $route_name = 'view.commerce_product_variation_prices.page';
+    $first_variation_prices_uri = Url::fromRoute($route_name, [
+      'commerce_product_variation' => $this->firstVariation->id(),
+      'commerce_product' => $this->firstVariation->getProduct()->id(),
+    ])->toString();
+    $this->assertSession()->linkByHrefExists($first_variation_prices_uri);
+    $this->clickLink('Edit');
+    $this->assertSession()->linkExists('Prices');
+    $this->assertSession()->linkByHrefExists($first_variation_prices_uri);
+    $this->clickLink('Prices');
+    $this->assertText('No prices yet.');
+    $this->createEntity('commerce_pricelist_item', [
+      'type' => 'commerce_product_variation',
+      'price_list_id' => $this->priceList->id(),
+      'purchasable_entity' => $this->firstVariation->id(),
+      'quantity' => 2,
+      'price' => new Price('666', 'USD'),
+    ]);
+    $this->getSession()->reload();
+    $this->assertSession()->pageTextContains($this->priceList->label());
+    $this->assertSession()->pageTextContains($this->firstVariation->label());
+    $this->assertSession()->pageTextContains('2.00');
+    $this->assertSession()->pageTextContains('$666.00');
+    $this->assertSession()->linkExists('Edit');
+    $this->assertSession()->linkExists('Delete');
+
+    $this->createEntity('commerce_pricelist_item', [
+      'type' => 'commerce_product_variation',
+      'price_list_id' => $this->priceList->id(),
+      'purchasable_entity' => $this->firstVariation->id(),
+      'quantity' => 5,
+      'price' => new Price('800', 'USD'),
+    ]);
+    $this->getSession()->reload();
+    $this->assertSession()->pageTextContains('5.00');
+    $this->assertSession()->pageTextContains('$800.00');
+
+    $this->createEntity('commerce_pricelist_item', [
+      'type' => 'commerce_product_variation',
+      'price_list_id' => $this->priceList->id(),
+      'purchasable_entity' => $this->secondVariation->id(),
+      'quantity' => 3,
+      'price' => new Price('100', 'USD'),
+    ]);
+    $this->drupalGet($this->secondVariation->toUrl('collection'));
+
+    $second_variation_prices_uri = Url::fromRoute($route_name, [
+      'commerce_product_variation' => $this->secondVariation->id(),
+      'commerce_product' => $this->secondVariation->getProduct()->id(),
+    ])->toString();
+    $this->assertSession()->linkByHrefExists($second_variation_prices_uri);
+    $this->drupalGet($second_variation_prices_uri);
+    $this->assertSession()->pageTextContains($this->secondVariation->label());
+    $this->assertSession()->pageTextContains('3.00');
+    $this->assertSession()->pageTextContains('$100.00');
+
+    $elements = $this->xpath('//select[@name="price_list_id"]/option');
+    $found_options = [];
+    foreach ($elements as $element) {
+      $found_options[$element->getValue()] = $element->getText();
+    }
+
+    $expected = [
+      '' => '- None -',
+      1 => $this->priceList->label(),
+    ];
+    $this->assertEquals($expected, $found_options);
   }
 
 }

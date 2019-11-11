@@ -8,3 +8,8 @@ services:
   commerce_pricelist.repository:
     class: Drupal\commerce_pricelist\PriceListRepository
     arguments: ['@entity_type.manager']
+
+  commerce_pricelist.route_subscriber:
+    class: Drupal\commerce_pricelist\EventSubscriber\RouteSubscriber
+    tags:
+      - { name: event_subscriber }
