@@ -227,6 +227,8 @@ class PriceListItem extends CommerceContentEntityBase implements PriceListItemIn
       ->setLabel(t('Price list'))
       ->setDescription(t('The parent price list.'))
       ->setSetting('target_type', 'commerce_pricelist')
+      ->setDisplayConfigurable('form', TRUE)
+      ->setRequired(TRUE)
       ->setReadOnly(TRUE);
 
     $fields['purchasable_entity'] = BaseFieldDefinition::create('entity_reference')

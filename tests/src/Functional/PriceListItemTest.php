@@ -471,4 +471,33 @@ class PriceListItemTest extends CommerceBrowserTestBase {
     $this->assertEquals($expected, $found_options);
   }
 
+  /**
+   * Tests the form for adding a price for a given variation.
+   */
+  public function testVariationPriceFormAndOperation() {
+    $route_parameters = [
+      'commerce_product_variation' => $this->firstVariation->id(),
+      'commerce_product' => $this->firstVariation->getProduct()->id(),
+    ];
+    $first_variation_prices_uri = Url::fromRoute('view.commerce_product_variation_prices.page', $route_parameters)->toString();
+    $this->drupalGet($first_variation_prices_uri);
+    $this->assertSession()->linkExists('Add price');
+    $add_price_form_uri = Url::fromRoute('entity.commerce_product_variation.add_price_form', $route_parameters)->toString();
+    $this->assertSession()->linkByHrefExists($add_price_form_uri);
+    $this->clickLink('Add price');
+    $this->assertSession()->fieldNotExists('purchasable_entity');
+    $this->assertSession()->fieldExists('price_list_id[0][target_id]');
+    $this->submitForm([
+      'price_list_id[0][target_id]' => $this->priceList->label() . ' (1)',
+      'quantity[0][value]' => '10',
+      'price[0][number]' => 50,
+    ], 'Save');
+    $this->assertSession()->pageTextContains('Saved the Red shirt: $50.00 price.');
+    $price_list_item = PriceListItem::load(1);
+    $this->assertEquals($this->priceList->id(), $price_list_item->getPriceListId());
+    $this->assertEquals($this->firstVariation->id(), $price_list_item->getPurchasableEntityId());
+    $this->assertEquals('10', $price_list_item->getQuantity());
+    $this->assertEquals(new Price('50', 'USD'), $price_list_item->getPrice());
+  }
+
 }
