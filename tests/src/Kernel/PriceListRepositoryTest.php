@@ -188,28 +188,38 @@ class PriceListRepositoryTest extends PriceListKernelTestBase {
    */
   public function testDates() {
     $repository = $this->container->get('commerce_pricelist.repository');
-    $this->priceList->setStartDate(new DrupalDateTime('-3 months'));
-    $this->priceList->setEndDate(new DrupalDateTime('+1 year'));
+    $this->priceList->setStartDate(new DrupalDateTime('2019-01-01 00:00:00'));
+    $this->priceList->setEndDate(new DrupalDateTime('2020-01-01 00:00:00'));
     $this->priceList->save();
 
-    $context = new Context($this->user, $this->store);
+    $time = strtotime('2019-11-15 00:00:00');
+    $context = new Context($this->user, $this->store, $time);
     $price_list_item = $repository->loadItem($this->variation, 1, $context);
     $this->assertEquals(new Price('5.00', 'USD'), $price_list_item->getPrice());
 
-    // Set the price list to start in the future.
-    $this->priceList->setStartDate(new DrupalDateTime('+1 month'));
+    // Future start date.
+    $this->priceList->setStartDate(new DrupalDateTime('2019-12-17 00:00:00'));
     $this->priceList->save();
 
-    $context = new Context($this->user, $this->store, time() + 86400);
+    $context = new Context($this->user, $this->store, $time + 1);
     $price_list_item = $repository->loadItem($this->variation, 1, $context);
     $this->assertEmpty($price_list_item);
 
-    // Expired.
-    $this->priceList->setStartDate(new DrupalDateTime('-3 months'));
-    $this->priceList->setEndDate(new DrupalDateTime('-1 month'));
+    // Confirm that the end date is not inclusive.
+    $this->priceList->setStartDate(new DrupalDateTime('2019-01-01 00:00:00'));
+    $this->priceList->setEndDate(new DrupalDateTime('2019-11-15 00:00:02'));
     $this->priceList->save();
 
-    $context = new Context($this->user, $this->store, time() + 86400 * 2);
+    $context = new Context($this->user, $this->store, $time + 2);
+    $price_list_item = $repository->loadItem($this->variation, 1, $context);
+    $this->assertEmpty($price_list_item);
+
+    // Past end date.
+    $this->priceList->setStartDate(new DrupalDateTime('2018-01-01 00:00:00'));
+    $this->priceList->setEndDate(new DrupalDateTime('2019-01-01 00:00:00'));
+    $this->priceList->save();
+
+    $context = new Context($this->user, $this->store, $time + 3);
     $price_list_item = $repository->loadItem($this->variation, 1, $context);
     $this->assertEmpty($price_list_item);
   }

@@ -6,6 +6,7 @@ use Drupal\commerce_price\Price;
 use Drupal\commerce_pricelist\Entity\PriceList;
 use Drupal\commerce_pricelist\Entity\PriceListItem;
 use Drupal\Core\Datetime\DrupalDateTime;
+use Drupal\datetime\Plugin\Field\FieldType\DateTimeItemInterface;
 use Drupal\Tests\commerce_pricelist\Kernel\PriceListKernelTestBase;
 
 /**
@@ -69,14 +70,18 @@ class PriceListTest extends PriceListKernelTestBase {
     $price_list->setCustomerRoles(['authenticated']);
     $this->assertEquals(['authenticated'], $price_list->getCustomerRoles());
 
+    $date_pattern = DateTimeItemInterface::DATETIME_STORAGE_FORMAT;
     $time = $this->container->get('datetime.time');
-    $this->assertEquals(gmdate('Y-m-d', $time->getRequestTime()), PriceList::getDefaultStartDate());
-    $this->assertEquals(gmdate('Y-m-d', $time->getRequestTime()), $price_list->getStartDate()->format('Y-m-d'));
-    $price_list->setStartDate(new DrupalDateTime('2017-01-01'));
-    $this->assertEquals('2017-01-01', $price_list->getStartDate()->format('Y-m-d'));
+    $default_start_date = gmdate($date_pattern, $time->getRequestTime());
+    $this->assertEquals($default_start_date, $price_list->getStartDate()->format($date_pattern));
+    $price_list->setStartDate(new DrupalDateTime('2017-01-01 12:12:12'));
+    $this->assertEquals('2017-01-01 12:12:12 UTC', $price_list->getStartDate()->format('Y-m-d H:i:s T'));
+    $this->assertEquals('2017-01-01 12:12:12 CET', $price_list->getStartDate('Europe/Berlin')->format('Y-m-d H:i:s T'));
 
-    $price_list->setEndDate(new DrupalDateTime('2017-01-31'));
-    $this->assertEquals('2017-01-31', $price_list->getEndDate()->format('Y-m-d'));
+    $this->assertNull($price_list->getEndDate());
+    $price_list->setEndDate(new DrupalDateTime('2017-01-31 17:15:00'));
+    $this->assertEquals('2017-01-31 17:15:00 UTC', $price_list->getEndDate()->format('Y-m-d H:i:s T'));
+    $this->assertEquals('2017-01-31 17:15:00 CET', $price_list->getEndDate('Europe/Berlin')->format('Y-m-d H:i:s T'));
 
     $this->assertTrue($price_list->isEnabled());
     $price_list->setEnabled(FALSE);

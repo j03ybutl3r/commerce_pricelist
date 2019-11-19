@@ -89,12 +89,23 @@ interface PriceListInterface extends ContentEntityInterface, EntityChangedInterf
   public function setCustomerRoles(array $rids);
 
   /**
-   * Gets the start date.
+   * Gets the start date/time.
+   *
+   * The start date/time should always be used in the store timezone.
+   * Since the price list can belong to multiple stores, the timezone
+   * isn't known at load/save time, and is provided by the caller instead.
+   *
+   * Note that the returned date/time value is the same in any timezone,
+   * the "2019-10-17 10:00" stored value is returned as "2019-10-17 10:00 CET"
+   * for "Europe/Berlin" and "2019-10-17 10:00 ET" for "America/New_York".
+   *
+   * @param string $store_timezone
+   *   The store timezone. E.g. "Europe/Berlin".
    *
    * @return \Drupal\Core\Datetime\DrupalDateTime
-   *   The start date.
+   *   The start date/time.
    */
-  public function getStartDate();
+  public function getStartDate($store_timezone = 'UTC');
 
   /**
    * Sets the start date.
@@ -107,12 +118,23 @@ interface PriceListInterface extends ContentEntityInterface, EntityChangedInterf
   public function setStartDate(DrupalDateTime $start_date);
 
   /**
-   * Gets the end date.
+   * Gets the end date/time.
    *
-   * @return \Drupal\Core\Datetime\DrupalDateTime|null
-   *   The end date, or NULL if the price list is not limited by end date.
+   * The end date/time should always be used in the store timezone.
+   * Since the price list can belong to multiple stores, the timezone
+   * isn't known at load/save time, and is provided by the caller instead.
+   *
+   * Note that the returned date/time value is the same in any timezone,
+   * the "2019-10-17 11:00" stored value is returned as "2019-10-17 11:00 CET"
+   * for "Europe/Berlin" and "2019-10-17 11:00 ET" for "America/New_York".
+   *
+   * @param string $store_timezone
+   *   The store timezone. E.g. "Europe/Berlin".
+   *
+   * @return \Drupal\Core\Datetime\DrupalDateTime
+   *   The end/time date.
    */
-  public function getEndDate();
+  public function getEndDate($store_timezone = 'UTC');
 
   /**
    * Sets the end date.

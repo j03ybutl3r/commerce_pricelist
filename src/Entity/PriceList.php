@@ -9,6 +9,7 @@ use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\commerce\Entity\CommerceContentEntityBase;
 use Drupal\Core\Entity\EntityChangedTrait;
 use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\datetime\Plugin\Field\FieldType\DateTimeItemInterface;
 use Drupal\user\UserInterface;
 
 /**
@@ -168,25 +169,24 @@ class PriceList extends CommerceContentEntityBase implements PriceListInterface 
   /**
    * {@inheritdoc}
    */
-  public function getStartDate() {
-    // Can't use the ->date property because it resets the timezone to UTC.
-    return new DrupalDateTime($this->get('start_date')->value);
+  public function getStartDate($store_timezone = 'UTC') {
+    return new DrupalDateTime($this->get('start_date')->value, $store_timezone);
   }
 
   /**
    * {@inheritdoc}
    */
   public function setStartDate(DrupalDateTime $start_date) {
-    $this->get('start_date')->value = $start_date->format('Y-m-d');
+    $this->get('start_date')->value = $start_date->format(DateTimeItemInterface::DATETIME_STORAGE_FORMAT);
     return $this;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getEndDate() {
+  public function getEndDate($store_timezone = 'UTC') {
     if (!$this->get('end_date')->isEmpty()) {
-      return new DrupalDateTime($this->get('end_date')->value);
+      return new DrupalDateTime($this->get('end_date')->value, $store_timezone);
     }
   }
 
@@ -194,7 +194,10 @@ class PriceList extends CommerceContentEntityBase implements PriceListInterface 
    * {@inheritdoc}
    */
   public function setEndDate(DrupalDateTime $end_date = NULL) {
-    $this->get('end_date')->value = $end_date ? $end_date->format('Y-m-d') : NULL;
+    $this->get('end_date')->value = NULL;
+    if ($end_date) {
+      $this->get('end_date')->value = $end_date->format(DateTimeItemInterface::DATETIME_STORAGE_FORMAT);
+    }
     return $this;
   }
 
@@ -320,10 +323,10 @@ class PriceList extends CommerceContentEntityBase implements PriceListInterface 
       ->setLabel(t('Start date'))
       ->setDescription(t('The date the price list becomes valid.'))
       ->setRequired(TRUE)
-      ->setSetting('datetime_type', 'date')
+      ->setSetting('datetime_type', 'datetime')
       ->setDefaultValueCallback('Drupal\commerce_pricelist\Entity\PriceList::getDefaultStartDate')
       ->setDisplayOptions('form', [
-        'type' => 'datetime_default',
+        'type' => 'commerce_store_datetime',
         'weight' => 5,
       ]);
 
@@ -331,9 +334,10 @@ class PriceList extends CommerceContentEntityBase implements PriceListInterface 
       ->setLabel(t('End date'))
       ->setDescription(t('The date after which the price list is invalid.'))
       ->setRequired(FALSE)
-      ->setSetting('datetime_type', 'date')
+      ->setSetting('datetime_type', 'datetime')
+      ->setSetting('datetime_optional_label', t('Provide an end date'))
       ->setDisplayOptions('form', [
-        'type' => 'commerce_end_date',
+        'type' => 'commerce_store_datetime',
         'weight' => 6,
       ]);
 
@@ -372,21 +376,7 @@ class PriceList extends CommerceContentEntityBase implements PriceListInterface 
    */
   public static function getDefaultStartDate() {
     $timestamp = \Drupal::time()->getRequestTime();
-    return gmdate('Y-m-d', $timestamp);
-  }
-
-  /**
-   * Default value callback for 'end_date' base field definition.
-   *
-   * @see ::baseFieldDefinitions()
-   *
-   * @return int
-   *   The default value (date string).
-   */
-  public static function getDefaultEndDate() {
-    // Today + 1 year.
-    $timestamp = \Drupal::time()->getRequestTime();
-    return gmdate('Y-m-d', $timestamp + 31536000);
+    return gmdate(DateTimeItemInterface::DATETIME_STORAGE_FORMAT, $timestamp);
   }
 
   /**

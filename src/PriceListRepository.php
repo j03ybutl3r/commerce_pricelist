@@ -4,7 +4,9 @@ namespace Drupal\commerce_pricelist;
 
 use Drupal\commerce\Context;
 use Drupal\commerce\PurchasableEntityInterface;
+use Drupal\Core\Datetime\DrupalDateTime;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\datetime\Plugin\Field\FieldType\DateTimeItemInterface;
 
 class PriceListRepository implements PriceListRepositoryInterface {
 
@@ -45,8 +47,9 @@ class PriceListRepository implements PriceListRepositoryInterface {
   public function loadItem(PurchasableEntityInterface $entity, $quantity, Context $context) {
     $customer_id = $context->getCustomer()->id();
     $store_id = $context->getStore()->id();
-    $today = gmdate('Y-m-d', $context->getTime());
-    $cache_key = implode(':', [$entity->id(), $quantity, $customer_id, $store_id, $today]);
+    $date = DrupalDateTime::createFromTimestamp($context->getTime(), $context->getStore()->getTimezone());
+    $now = $date->format(DateTimeItemInterface::DATETIME_STORAGE_FORMAT);
+    $cache_key = implode(':', [$entity->id(), $quantity, $customer_id, $store_id, $now]);
     if (array_key_exists($cache_key, $this->priceListItems)) {
       return $this->priceListItems[$cache_key];
     }
@@ -132,8 +135,9 @@ class PriceListRepository implements PriceListRepositoryInterface {
   protected function loadPriceListIds($bundle, Context $context) {
     $customer_id = $context->getCustomer()->id();
     $store_id = $context->getStore()->id();
-    $today = gmdate('Y-m-d', $context->getTime());
-    $cache_key = implode(':', [$bundle, $customer_id, $store_id, $today]);
+    $date = DrupalDateTime::createFromTimestamp($context->getTime(), $context->getStore()->getTimezone());
+    $now = $date->format(DateTimeItemInterface::DATETIME_STORAGE_FORMAT);
+    $cache_key = implode(':', [$bundle, $customer_id, $store_id, $now]);
     if (array_key_exists($cache_key, $this->priceListIds)) {
       return $this->priceListIds[$cache_key];
     }
@@ -151,9 +155,9 @@ class PriceListRepository implements PriceListRepositoryInterface {
         ->condition('customer_roles', $context->getCustomer()->getRoles(), 'IN')
         ->notExists('customer_roles')
       )
-      ->condition('start_date', $today, '<=')
+      ->condition('start_date', $now, '<=')
       ->condition($query->orConditionGroup()
-        ->condition('end_date', $today, '>=')
+        ->condition('end_date', $now, '>')
         ->notExists('end_date')
       )
       ->condition('status', TRUE)
