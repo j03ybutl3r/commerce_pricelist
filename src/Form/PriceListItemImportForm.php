@@ -321,13 +321,8 @@ class PriceListItemImportForm extends FormBase {
     /** @var \Drupal\commerce_pricelist\Entity\PriceList $price_list */
     $price_list = $price_list_storage->load($price_list_id);
     $purchasable_entity_storage = $entity_type_manager->getStorage($price_list->bundle());
-    $csv = new CsvFileObject($file_uri, TRUE, [
-      $mapping['purchasable_entity_column'] => 'purchasable_entity',
-      $mapping['quantity_column'] => 'quantity',
-      $mapping['list_price_column'] => 'list_price',
-      $mapping['price_column'] => 'price',
-      $mapping['currency_column'] => 'currency_code',
-    ], $csv_options);
+    $header_mapping = static::buildHeaderMapping($mapping);
+    $csv = new CsvFileObject($file_uri, TRUE, $header_mapping, $csv_options);
     if (empty($context['sandbox'])) {
       $context['sandbox']['import_total'] = (int) $csv->count();
       $context['sandbox']['import_count'] = 0;
@@ -372,14 +367,7 @@ class PriceListItemImportForm extends FormBase {
         $csv->next();
         continue;
       }
-
       $quantity = !empty($row['quantity']) ? $row['quantity'] : '1';
-      $currency_code = $row['currency_code'];
-      $list_price = NULL;
-      if (isset($row['list_price'])) {
-        $list_price = new Price($row['list_price'], $currency_code);
-      }
-      $price = new Price($row['price'], $currency_code);
 
       // If existing price list items weren't deleted before the import,
       // try to find one to update.
@@ -396,8 +384,6 @@ class PriceListItemImportForm extends FormBase {
           $existing_price_list_item_id = reset($result);
           $price_list_item = $price_list_item_storage->load($existing_price_list_item_id);
           assert($price_list_item instanceof PriceListItemInterface);
-          $price_list_item->setListPrice($list_price);
-          $price_list_item->setPrice($price);
         }
       }
 
@@ -408,9 +394,16 @@ class PriceListItemImportForm extends FormBase {
           'price_list_id' => $price_list->id(),
           'purchasable_entity' => $purchasable_entity->id(),
           'quantity' => $quantity,
-          'list_price' => $list_price,
-          'price' => $price,
         ]);
+      }
+      try {
+        static::processRow($row, $price_list_item);
+      }
+      catch (\Exception $e) {
+        $context['results']['import_skipped']++;
+        $import_count++;
+        $csv->next();
+        continue;
       }
 
       $import_type = $price_list_item->isNew() ? 'created' : 'updated';
@@ -489,6 +482,44 @@ class PriceListItemImportForm extends FormBase {
         ));
       }
     }
+  }
+
+  /**
+   * Builds the header mapping.
+   *
+   * @param array $mapping
+   *   The configured column mapping.
+   *
+   * @return array
+   *   The header mapping (real_column => mapped_column).
+   */
+  protected static function buildHeaderMapping(array $mapping) {
+    return [
+      $mapping['purchasable_entity_column'] => 'purchasable_entity',
+      $mapping['quantity_column'] => 'quantity',
+      $mapping['list_price_column'] => 'list_price',
+      $mapping['price_column'] => 'price',
+      $mapping['currency_column'] => 'currency_code',
+    ];
+  }
+
+  /**
+   * Processes the given CSV row and price list item.
+   *
+   * @param array $row
+   *   The CSV row to process.
+   * @param \Drupal\commerce_pricelist\Entity\PriceListItemInterface $price_list_item
+   *   The price list item.
+   */
+  protected static function processRow(array $row, PriceListItemInterface $price_list_item) {
+    $currency_code = $row['currency_code'];
+    $list_price = NULL;
+    if (isset($row['list_price'])) {
+      $list_price = new Price($row['list_price'], $currency_code);
+    }
+    $price = new Price($row['price'], $currency_code);
+    $price_list_item->setListPrice($list_price);
+    $price_list_item->setPrice($price);
   }
 
 }

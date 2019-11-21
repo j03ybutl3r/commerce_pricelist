@@ -3,6 +3,7 @@
 namespace Drupal\commerce_pricelist\Form;
 
 use Drupal\commerce_pricelist\Entity\PriceListInterface;
+use Drupal\commerce_pricelist\Entity\PriceListItemInterface;
 use Drupal\Core\Entity\EntityFieldManagerInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\File\FileSystemInterface;
@@ -230,7 +231,7 @@ class PriceListItemExportForm extends FormBase {
         ->execute();
 
       // Append the configured headers to the CSV file.
-      $csv->fputcsv($mapping);
+      $csv->fputcsv(static::buildHeader($mapping));
       $context['sandbox']['export_total'] = (int) $price_list_item_count;
       $context['results']['external_url'] = $stream_wrapper->getExternalUrl();
       $context['results']['export_count'] = 0;
@@ -251,24 +252,10 @@ class PriceListItemExportForm extends FormBase {
       return;
     }
     $price_list_items = $price_list_item_storage->loadMultiple($price_list_item_ids);
-    $purchasable_entity_type_id = $price_list->bundle();
     /** @var \Drupal\commerce_pricelist\Entity\PriceListItemInterface $price_list_item */
     foreach ($price_list_items as $price_list_item) {
-      $purchased_entity = $price_list_item->getPurchasableEntity();
-      $id = $purchasable_entity_type_id === 'commerce_product_variation' ? $purchased_entity->getSku() : $purchased_entity->id();
-      $list_price = '';
-
-      if ($price_list_item->getListPrice()) {
-        $list_price = $price_list_item->getListPrice()->getNumber();
-      }
-
-      $csv->fputcsv([
-        $id,
-        $price_list_item->getQuantity(),
-        $list_price,
-        $price_list_item->getPrice()->getNumber(),
-        $price_list_item->getPrice()->getCurrencyCode(),
-      ]);
+      $row = static::buildRow($price_list_item);
+      $csv->fputcsv($row);
       $export_count++;
     }
     $context['message'] = t('Exporting @exported of @export_total price list items', [
@@ -314,6 +301,47 @@ class PriceListItemExportForm extends FormBase {
     if (isset($results['external_url'])) {
       $messenger->addStatus(t('The generated file can be downloaded at the following url: <a href="@url">@url</a>.', ['@url' => $results['external_url']]));
     }
+  }
+
+  /**
+   * Builds the CSV header row.
+   *
+   * @param array $mapping
+   *   The column mapping array.
+   *
+   * @return array
+   *   The CSV header row.
+   */
+  protected static function buildHeader(array $mapping) {
+    // Nothing to do, but could potentially be overridden by a child class.
+    return $mapping;
+  }
+
+  /**
+   * Builds the CSV row for the given price list item.
+   *
+   * @param \Drupal\commerce_pricelist\Entity\PriceListItemInterface $price_list_item
+   *   The price list item.
+   *
+   * @return array
+   *   The CSV row for the given price list item.
+   */
+  protected static function buildRow(PriceListItemInterface $price_list_item) {
+    $purchased_entity = $price_list_item->getPurchasableEntity();
+    $id = $price_list_item->bundle() === 'commerce_product_variation' ? $purchased_entity->getSku() : $purchased_entity->id();
+    $list_price = '';
+
+    if ($price_list_item->getListPrice()) {
+      $list_price = $price_list_item->getListPrice()->getNumber();
+    }
+
+    return [
+      $id,
+      $price_list_item->getQuantity(),
+      $list_price,
+      $price_list_item->getPrice()->getNumber(),
+      $price_list_item->getPrice()->getCurrencyCode(),
+    ];
   }
 
 }

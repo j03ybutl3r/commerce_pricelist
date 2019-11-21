@@ -5,8 +5,6 @@
  * Post update functions for Pricelist.
  */
 
-use Drupal\datetime\Plugin\Field\FieldType\DateTimeItemInterface;
-
 /**
  * Create the 'commerce_product_variation_prices' view.
  */
