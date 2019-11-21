@@ -4,7 +4,6 @@ namespace Drupal\commerce_pricelist;
 
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\entity\Routing\AdminHtmlRouteProvider;
-use Symfony\Component\Routing\Route;
 
 /**
  * Provides routes for the price list item entity.

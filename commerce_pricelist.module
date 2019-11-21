@@ -16,16 +16,6 @@ use Drupal\Core\Url;
 use Drupal\views\ViewExecutable;
 
 /**
- * Implements hook_entity_type_alter().
- */
-function commerce_pricelist_entity_type_alter(array &$entity_types) {
-  /** @var $entity_types \Drupal\Core\Entity\EntityTypeInterface[] */
-  if (isset($entity_types['commerce_product_variation'])) {
-    $entity_types['commerce_product_variation']->setLinkTemplate('add-price-form', '/product/{commerce_product}/variations/{commerce_product_variation}/prices/add');
-  }
-}
-
-/**
  * Implements hook_help().
  */
 function commerce_pricelist_help($route_name, RouteMatchInterface $route_match) {
