@@ -143,7 +143,6 @@ class PriceListItemImportForm extends FormBase {
       '#title' => $this->t('List price column'),
       '#description' => $this->t('If left empty, no list price will be set.'),
       '#default_value' => 'list_price',
-      '#required' => TRUE,
     ];
     $form['mapping']['price_column'] = [
       '#type' => 'textfield',
@@ -493,13 +492,23 @@ class PriceListItemImportForm extends FormBase {
    *   The header mapping (real_column => mapped_column).
    */
   protected static function buildHeaderMapping(array $mapping) {
-    return [
+    $header_mapping = [
       $mapping['purchasable_entity_column'] => 'purchasable_entity',
       $mapping['quantity_column'] => 'quantity',
-      $mapping['list_price_column'] => 'list_price',
+    ];
+
+    // The list price column is optional.
+    if (!empty($mapping['list_price_column'])) {
+      $header_mapping += [
+        $mapping['list_price_column'] => 'list_price',
+      ];
+    }
+
+    $header_mapping += [
       $mapping['price_column'] => 'price',
       $mapping['currency_column'] => 'currency_code',
     ];
+    return $header_mapping;
   }
 
   /**
@@ -514,14 +523,15 @@ class PriceListItemImportForm extends FormBase {
     $currency_code = $row['currency_code'];
     // If the price is given in a format like "4 000" we should allow it.
     $row['price'] = str_replace(' ', '', $row['price']);
+    $price = new Price($row['price'], $currency_code);
+    $price_list_item->setPrice($price);
+
     $list_price = NULL;
-    if (isset($row['list_price'])) {
+    if (isset($row['list_price']) && $row['list_price'] !== '') {
       $row['list_price'] = str_replace(' ', '', $row['list_price']);
       $list_price = new Price($row['list_price'], $currency_code);
+      $price_list_item->setListPrice($list_price);
     }
-    $price = new Price($row['price'], $currency_code);
-    $price_list_item->setListPrice($list_price);
-    $price_list_item->setPrice($price);
   }
 
 }
