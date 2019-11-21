@@ -355,7 +355,6 @@ class PriceListItemImportForm extends FormBase {
           continue 2;
         }
       }
-
       $purchasable_entity = $purchasable_entity_storage->loadByProperties([
         $mapping['purchasable_entity_column_type'] => $row['purchasable_entity'],
       ]);
@@ -513,8 +512,11 @@ class PriceListItemImportForm extends FormBase {
    */
   protected static function processRow(array $row, PriceListItemInterface $price_list_item) {
     $currency_code = $row['currency_code'];
+    // If the price is given in a format like "4 000" we should allow it.
+    $row['price'] = str_replace(' ', '', $row['price']);
     $list_price = NULL;
     if (isset($row['list_price'])) {
+      $row['list_price'] = str_replace(' ', '', $row['list_price']);
       $list_price = new Price($row['list_price'], $currency_code);
     }
     $price = new Price($row['price'], $currency_code);

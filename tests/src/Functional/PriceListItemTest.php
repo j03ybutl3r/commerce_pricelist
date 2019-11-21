@@ -38,6 +38,13 @@ class PriceListItemTest extends CommerceBrowserTestBase {
   protected $secondVariation;
 
   /**
+   * The price list item collection uri.
+   *
+   * @var string
+   */
+  protected $priceListItemCollectionUri;
+
+  /**
    * {@inheritdoc}
    */
   public static $modules = [
@@ -90,16 +97,16 @@ class PriceListItemTest extends CommerceBrowserTestBase {
       'stores' => [$this->store],
       'variations' => [$this->firstVariation, $this->secondVariation],
     ]);
+    $this->priceListItemCollectionUri = Url::fromRoute('entity.commerce_pricelist_item.collection', [
+      'commerce_pricelist' => $this->priceList->id(),
+    ])->toString();
   }
 
   /**
    * Tests adding a price list item.
    */
   public function testAdd() {
-    $collection_url = Url::fromRoute('entity.commerce_pricelist_item.collection', [
-      'commerce_pricelist' => $this->priceList->id(),
-    ]);
-    $this->drupalGet($collection_url->toString());
+    $this->drupalGet($this->priceListItemCollectionUri);
     $this->clickLink('Add price');
 
     $this->submitForm([
@@ -211,10 +218,7 @@ class PriceListItemTest extends CommerceBrowserTestBase {
       'price' => new Price('666', 'USD'),
     ]);
 
-    $collection_url = Url::fromRoute('entity.commerce_pricelist_item.collection', [
-      'commerce_pricelist' => $this->priceList->id(),
-    ]);
-    $this->drupalGet($collection_url->toString());
+    $this->drupalGet($this->priceListItemCollectionUri);
     $this->clickLink('Import prices');
 
     $filepath = drupal_get_path('module', 'commerce_pricelist_test') . '/files/prices.csv';
@@ -262,10 +266,7 @@ class PriceListItemTest extends CommerceBrowserTestBase {
    * Tests importing price list items and updating existing price list items.
    */
   public function testImportPriceListItemsWithUpdate() {
-    $collection_url = Url::fromRoute('entity.commerce_pricelist_item.collection', [
-      'commerce_pricelist' => $this->priceList->id(),
-    ]);
-    $this->drupalGet($collection_url);
+    $this->drupalGet($this->priceListItemCollectionUri);
     $this->clickLink('Import prices');
 
     $filepath = drupal_get_path('module', 'commerce_pricelist_test') . '/files/prices.csv';
@@ -285,10 +286,7 @@ class PriceListItemTest extends CommerceBrowserTestBase {
     $price_list_items = $price_list_item_storage->loadMultiple();
     $this->assertCount(2, $price_list_items);
 
-    $collection_url = Url::fromRoute('entity.commerce_pricelist_item.collection', [
-      'commerce_pricelist' => $this->priceList->id(),
-    ]);
-    $this->drupalGet($collection_url);
+    $this->drupalGet($this->priceListItemCollectionUri);
     $this->clickLink('Import prices');
 
     $filepath = drupal_get_path('module', 'commerce_pricelist_test') . '/files/prices_update.csv';
@@ -347,6 +345,35 @@ class PriceListItemTest extends CommerceBrowserTestBase {
   }
 
   /**
+   * Tests importing price list items with badly formatted prices.
+   */
+  public function testImportPriceListItemsWithBadPrices() {
+    $this->drupalGet($this->priceListItemCollectionUri);
+    $this->clickLink('Import prices');
+    $this->submitForm([
+      'files[csv]' => __DIR__ . '/../../fixtures/price_list_invalid_prices.csv',
+      'mapping[purchasable_entity_column_type]' => 'sku',
+      'mapping[purchasable_entity_column]' => 'product_variation',
+      'mapping[quantity_column]' => 'quantity',
+      'mapping[list_price_column]' => 'list_price',
+      'mapping[price_column]' => 'price',
+      'mapping[currency_column]' => 'currency_code',
+      'options[delimiter]' => ',',
+      'options[enclosure]' => '"',
+    ], 'Import prices');
+    $this->assertSession()->pageTextContains('Imported 1 price.');
+    // We have a badly formatted price in there as well, which we are expecting
+    // to be skipped.
+    $this->assertSession()->pageTextContains('Skipped 1 price during import.');
+    $price_list_item_storage = $this->container->get('entity_type.manager')->getStorage('commerce_pricelist_item');
+    $price_list_item = $price_list_item_storage->load(1);
+    $this->assertEquals($this->priceList->id(), $price_list_item->getPriceListId());
+    $this->assertEquals($this->firstVariation->id(), $price_list_item->getPurchasableEntityId());
+    $this->assertEquals('1', $price_list_item->getQuantity());
+    $this->assertEquals(new Price('4000', 'USD'), $price_list_item->getPrice());
+  }
+
+  /**
    * Tests exporting price list items.
    */
   public function testExportPriceListItems() {
@@ -370,10 +397,7 @@ class PriceListItemTest extends CommerceBrowserTestBase {
         ];
       }
     }
-    $collection_url = Url::fromRoute('entity.commerce_pricelist_item.collection', [
-      'commerce_pricelist' => $this->priceList->id(),
-    ]);
-    $this->drupalGet($collection_url->toString());
+    $this->drupalGet($this->priceListItemCollectionUri);
     $this->clickLink('Export prices');
     $this->submitForm([
       'mapping[quantity_column]' => 'qty',
