@@ -23,3 +23,21 @@ entity.commerce_pricelist_item.export_form:
     parameters:
       commerce_price_list:
         type: 'entity:commerce_price_list'
+
+entity.commerce_product_variation.add_price_form:
+  path: '/product/{commerce_product}/variations/{commerce_product_variation}/prices/add'
+  defaults:
+    _entity_form: 'commerce_pricelist_item.add'
+    entity_type_id: 'commerce_pricelist_item'
+    _title: 'Add price'
+  options:
+    _admin_route: TRUE
+    parameters:
+      commerce_product:
+        type: 'entity:commerce_product'
+      commerce_product_variation:
+        type: 'entity:commerce_product_variation'
+  requirements:
+    commerce_product: '\d+'
+    commerce_product_variation: '\d+'
+    _entity_create_access: 'commerce_pricelist_item'
