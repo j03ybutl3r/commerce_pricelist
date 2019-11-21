@@ -69,6 +69,10 @@ class PriceListRepository implements PriceListRepositoryInterface {
       ->condition('quantity', $quantity, '<=')
       ->condition('purchasable_entity', $entity->id())
       ->condition('status', TRUE)
+      ->addTag('commerce_pricelist_item_query')
+      ->addMetaData('price_list_ids', $price_list_ids)
+      ->addMetaData('customer_id', $customer_id)
+      ->addMetaData('store_id', $store_id)
       ->sort('quantity', 'ASC');
     $result = $query->execute();
     if (!empty($result)) {
@@ -162,7 +166,10 @@ class PriceListRepository implements PriceListRepositoryInterface {
       )
       ->condition('status', TRUE)
       ->sort('weight', 'ASC')
-      ->sort('id', 'DESC');
+      ->sort('id', 'DESC')
+      ->addTag('commerce_pricelist_query')
+      ->addMetaData('customer_id', $customer_id)
+      ->addMetaData('store_id', $store_id);
     $result = $query->execute();
     $price_list_ids = array_values($result);
     $this->priceListIds[$cache_key] = $price_list_ids;
