@@ -8,6 +8,7 @@ use Drupal\commerce_pricelist\Entity\PriceListInterface;
 use Drupal\commerce_pricelist\Entity\PriceListItemInterface;
 use Drupal\Core\Entity\EntityFieldManagerInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
@@ -214,7 +215,7 @@ class PriceListItemImportForm extends FormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    $file = file_save_upload('csv', $form['csv']['#upload_validators'], 'temporary://', 0, FILE_EXISTS_RENAME);
+    $file = file_save_upload('csv', $form['csv']['#upload_validators'], 'temporary://', 0, FileSystemInterface::EXISTS_RENAME);
     $values = $form_state->getValues();
 
     $batch = [
