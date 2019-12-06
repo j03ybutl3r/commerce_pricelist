@@ -57,6 +57,8 @@ use Drupal\Core\Entity\EntityTypeInterface;
  *     "edit-form" = "/price-list/{commerce_pricelist}/prices/{commerce_pricelist_item}/edit",
  *     "duplicate-form" = "/price-list/{commerce_pricelist}/prices/{commerce_pricelist_item}/duplicate",
  *     "delete-form" = "/price-list/{commerce_pricelist}/prices/{commerce_pricelist_item}/delete",
+ *     "export-form" = "/price-list/{commerce_pricelist}/prices/export",
+ *     "import-form" = "/price-list/{commerce_pricelist}/prices/import",
  *     "collection" = "/price-list/{commerce_pricelist}/prices",
  *   },
  * )

@@ -2,13 +2,33 @@
 
 namespace Drupal\commerce_pricelist;
 
+use Drupal\commerce_pricelist\Form\PriceListItemExportForm;
+use Drupal\commerce_pricelist\Form\PriceListItemImportForm;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\entity\Routing\AdminHtmlRouteProvider;
+use Symfony\Component\Routing\Route;
 
 /**
  * Provides routes for the price list item entity.
  */
 class PriceListItemRouteProvider extends AdminHtmlRouteProvider {
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getRoutes(EntityTypeInterface $entity_type) {
+    $collection = parent::getRoutes($entity_type);
+
+    $entity_type_id = $entity_type->id();
+    if ($export_route = $this->getExportFormRoute($entity_type)) {
+      $collection->add("entity.{$entity_type_id}.export_form", $export_route);
+    }
+    if ($import_route = $this->getImportFormRoute($entity_type)) {
+      $collection->add("entity.{$entity_type_id}.import_form", $import_route);
+    }
+
+    return $collection;
+  }
 
   /**
    * {@inheritdoc}
@@ -57,6 +77,62 @@ class PriceListItemRouteProvider extends AdminHtmlRouteProvider {
     $route->setOption('_admin_route', TRUE);
 
     return $route;
+  }
+
+  /**
+   * Gets the export-form route.
+   *
+   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
+   *   The entity type.
+   *
+   * @return \Symfony\Component\Routing\Route|null
+   *   The generated route, if available.
+   */
+  protected function getExportFormRoute(EntityTypeInterface $entity_type) {
+    if ($entity_type->hasLinkTemplate('export-form')) {
+      $route = new Route($entity_type->getLinkTemplate('export-form'));
+      $route
+        ->setDefaults([
+          '_form' => PriceListItemExportForm::class,
+          '_title' => 'Export prices',
+        ])
+        ->setRequirement('_permission', $entity_type->getAdminPermission())
+        ->setRequirement('commerce_pricelist', '\d+')
+        ->setOption('parameters', [
+          'commerce_pricelist' => ['type' => 'entity:commerce_pricelist'],
+        ])
+        ->setOption('_admin_route', TRUE);
+
+      return $route;
+    }
+  }
+
+  /**
+   * Gets the import-form route.
+   *
+   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
+   *   The entity type.
+   *
+   * @return \Symfony\Component\Routing\Route|null
+   *   The generated route, if available.
+   */
+  protected function getImportFormRoute(EntityTypeInterface $entity_type) {
+    if ($entity_type->hasLinkTemplate('import-form')) {
+      $route = new Route($entity_type->getLinkTemplate('import-form'));
+      $route
+        ->setDefaults([
+          '_form' => PriceListItemImportForm::class,
+          '_title' => 'Import prices',
+        ])
+        ->setRequirement('_permission', $entity_type->getAdminPermission())
+        ->setRequirement('commerce_pricelist', '\d+')
+        ->setOption('parameters', [
+          'commerce_pricelist' => ['type' => 'entity:commerce_pricelist'],
+        ])
+        ->setOption('_admin_route', TRUE);
+
+      return $route;
+    }
   }
 
 }

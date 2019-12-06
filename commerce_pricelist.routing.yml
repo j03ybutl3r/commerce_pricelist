@@ -1,29 +1,3 @@
-entity.commerce_pricelist_item.import_form:
-  path: '/price-list/{commerce_pricelist}/prices/import'
-  defaults:
-    _form: \Drupal\commerce_pricelist\Form\PriceListItemImportForm
-    _title: 'Import prices'
-  requirements:
-    _permission: 'administer commerce_pricelist'
-  options:
-    _admin_route: TRUE
-    parameters:
-      commerce_price_list:
-        type: 'entity:commerce_price_list'
-
-entity.commerce_pricelist_item.export_form:
-  path: '/price-list/{commerce_pricelist}/prices/export'
-  defaults:
-    _form: \Drupal\commerce_pricelist\Form\PriceListItemExportForm
-    _title: 'Export prices'
-  requirements:
-    _permission: 'administer commerce_pricelist'
-  options:
-    _admin_route: TRUE
-    parameters:
-      commerce_price_list:
-        type: 'entity:commerce_price_list'
-
 entity.commerce_product_variation.add_price_form:
   path: '/product/{commerce_product}/variations/{commerce_product_variation}/prices/add'
   defaults:
