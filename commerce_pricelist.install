@@ -52,3 +52,19 @@ function commerce_pricelist_update_8201() {
     ]);
   $definition_update_manager->uninstallFieldStorageDefinition($storage_definition);
 }
+
+/**
+ * Define event handlers for price list and price list items.
+ */
+function commerce_pricelist_update_8202() {
+  $definition_update_manager = \Drupal::entityDefinitionUpdateManager();
+  $entity_type = $definition_update_manager->getEntityType('commerce_pricelist');
+  $entity_type->setHandlerClass('event', \Drupal\commerce_pricelist\Event\PriceListEvent::class);
+  $entity_type->setHandlerClass('storage', \Drupal\commerce\CommerceContentEntityStorage::class);
+  $definition_update_manager->updateEntityType($entity_type);
+
+  $entity_type = $definition_update_manager->getEntityType('commerce_pricelist_item');
+  $entity_type->setHandlerClass('event', \Drupal\commerce_pricelist\Event\PriceListItemEvent::class);
+  $entity_type->setHandlerClass('storage', \Drupal\commerce\CommerceContentEntityStorage::class);
+  $definition_update_manager->updateEntityType($entity_type);
+}

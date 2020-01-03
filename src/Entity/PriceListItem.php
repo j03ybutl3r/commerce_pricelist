@@ -28,6 +28,8 @@ use Drupal\Core\Entity\EntityTypeInterface;
  *     plural = "@count prices",
  *   ),
  *   handlers = {
+ *     "event" = "Drupal\commerce_pricelist\Event\PriceListItemEvent",
+ *     "storage" = "Drupal\commerce\CommerceContentEntityStorage",
  *     "list_builder" = "Drupal\commerce_pricelist\PriceListItemListBuilder",
  *     "view_builder" = "Drupal\Core\Entity\EntityViewBuilder",
  *     "views_data" = "Drupal\views\EntityViewsData",

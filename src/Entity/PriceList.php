@@ -26,6 +26,8 @@ use Drupal\user\UserInterface;
  *     plural = "@count price lists",
  *   ),
  *   handlers = {
+ *     "event" = "Drupal\commerce_pricelist\Event\PriceListEvent",
+ *     "storage" = "Drupal\commerce\CommerceContentEntityStorage",
  *     "view_builder" = "Drupal\Core\Entity\EntityViewBuilder",
  *     "list_builder" = "Drupal\commerce_pricelist\PriceListListBuilder",
  *     "views_data" = "Drupal\views\EntityViewsData",
