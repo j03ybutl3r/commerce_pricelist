@@ -86,6 +86,7 @@ function commerce_pricelist_update_8203() {
     ->setLabel(t('Owner'))
     ->setDescription(t('The user that owns this price list.'))
     ->setSetting('target_type', 'user')
+    ->setTranslatable(FALSE)
     ->setInitialValue($default_uid)
     ->setDefaultValueCallback(PriceList::class . '::getDefaultEntityOwner');
   $definition_update_manager->installFieldStorageDefinition('uid', 'commerce_pricelist', 'commerce_pricelist', $storage_definition);
@@ -94,6 +95,7 @@ function commerce_pricelist_update_8203() {
     ->setLabel(t('Owner'))
     ->setDescription(t('The user that owns this price list item.'))
     ->setSetting('target_type', 'user')
+    ->setTranslatable(FALSE)
     ->setInitialValue($default_uid)
     ->setDefaultValueCallback(PriceListItem::class . '::getDefaultEntityOwner');
   $definition_update_manager->installFieldStorageDefinition('uid', 'commerce_pricelist_item', 'commerce_pricelist', $storage_definition);
