@@ -6,11 +6,12 @@ use Drupal\commerce\PurchasableEntityInterface;
 use Drupal\commerce_price\Price;
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityChangedInterface;
+use Drupal\user\EntityOwnerInterface;
 
 /**
  * Defines the interface for price list items.
  */
-interface PriceListItemInterface extends ContentEntityInterface, EntityChangedInterface {
+interface PriceListItemInterface extends ContentEntityInterface, EntityChangedInterface, EntityOwnerInterface {
 
   /**
    * Gets the parent price list.

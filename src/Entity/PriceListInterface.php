@@ -6,12 +6,13 @@ use Drupal\commerce_store\Entity\EntityStoresInterface;
 use Drupal\Core\Datetime\DrupalDateTime;
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityChangedInterface;
+use Drupal\user\EntityOwnerInterface;
 use Drupal\user\UserInterface;
 
 /**
  * Defines the interface for price lists.
  */
-interface PriceListInterface extends ContentEntityInterface, EntityChangedInterface, EntityStoresInterface {
+interface PriceListInterface extends ContentEntityInterface, EntityChangedInterface, EntityOwnerInterface, EntityStoresInterface {
 
   /**
    * Gets the price list name.

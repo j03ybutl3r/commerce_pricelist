@@ -6,6 +6,8 @@
  */
 
 use Drupal\Core\Field\BaseFieldDefinition;
+use Drupal\commerce_pricelist\Entity\PriceList;
+use Drupal\commerce_pricelist\Entity\PriceListItem;
 
 /**
  * Replace the 'customer_role' field with the 'customer_roles' field.
@@ -67,4 +69,41 @@ function commerce_pricelist_update_8202() {
   $entity_type->setHandlerClass('event', \Drupal\commerce_pricelist\Event\PriceListItemEvent::class);
   $entity_type->setHandlerClass('storage', \Drupal\commerce\CommerceContentEntityStorage::class);
   $definition_update_manager->updateEntityType($entity_type);
+}
+
+/**
+ * Add a 'uid' field to price lists and price list items.
+ */
+function commerce_pricelist_update_8203() {
+  /** @var \Drupal\commerce_store\StoreStorageInterface $store_storage */
+  $store_storage = \Drupal::entityTypeManager()->getStorage('commerce_store');
+  $default_store = $store_storage->loadDefault();
+  // Defaults the price list owner to the store owner.
+  $default_uid = $default_store ? $default_store->getOwnerId() : 0;
+
+  $definition_update_manager = \Drupal::entityDefinitionUpdateManager();
+  $storage_definition = BaseFieldDefinition::create('entity_reference')
+    ->setLabel(t('Owner'))
+    ->setDescription(t('The user that owns this price list.'))
+    ->setSetting('target_type', 'user')
+    ->setInitialValue($default_uid)
+    ->setDefaultValueCallback(PriceList::class . '::getDefaultEntityOwner');
+  $definition_update_manager->installFieldStorageDefinition('uid', 'commerce_pricelist', 'commerce_pricelist', $storage_definition);
+
+  $storage_definition = BaseFieldDefinition::create('entity_reference')
+    ->setLabel(t('Owner'))
+    ->setDescription(t('The user that owns this price list item.'))
+    ->setSetting('target_type', 'user')
+    ->setInitialValue($default_uid)
+    ->setDefaultValueCallback(PriceListItem::class . '::getDefaultEntityOwner');
+  $definition_update_manager->installFieldStorageDefinition('uid', 'commerce_pricelist_item', 'commerce_pricelist', $storage_definition);
+
+  foreach (['commerce_pricelist', 'commerce_pricelist_item'] as $entity_type_id) {
+    $entity_type = $definition_update_manager->getEntityType($entity_type_id);
+    $keys = $entity_type->getKeys();
+    $keys['owner'] = 'uid';
+    $keys['uid'] = 'uid';
+    $entity_type->set('entity_keys', $keys);
+    $definition_update_manager->updateEntityType($entity_type);
+  }
 }

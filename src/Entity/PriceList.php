@@ -10,6 +10,7 @@ use Drupal\commerce\Entity\CommerceContentEntityBase;
 use Drupal\Core\Entity\EntityChangedTrait;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\datetime\Plugin\Field\FieldType\DateTimeItemInterface;
+use Drupal\user\EntityOwnerTrait;
 use Drupal\user\UserInterface;
 
 /**
@@ -54,6 +55,8 @@ use Drupal\user\UserInterface;
  *     "label" = "name",
  *     "uuid" = "uuid",
  *     "status" = "status",
+ *     "owner" = "uid",
+ *     "uid" = "uid",
  *   },
  *   links = {
  *     "add-page" = "/price-list/add",
@@ -69,6 +72,7 @@ use Drupal\user\UserInterface;
 class PriceList extends CommerceContentEntityBase implements PriceListInterface {
 
   use EntityChangedTrait;
+  use EntityOwnerTrait;
 
   /**
    * {@inheritdoc}
@@ -267,6 +271,11 @@ class PriceList extends CommerceContentEntityBase implements PriceListInterface 
    */
   public static function baseFieldDefinitions(EntityTypeInterface $entity_type) {
     $fields = parent::baseFieldDefinitions($entity_type);
+    $fields += static::ownerBaseFieldDefinitions($entity_type);
+
+    $fields['uid']
+      ->setLabel(t('Owner'))
+      ->setDescription(t('The user that owns this price list.'));
 
     $fields['name'] = BaseFieldDefinition::create('string')
       ->setLabel(t('Name'))

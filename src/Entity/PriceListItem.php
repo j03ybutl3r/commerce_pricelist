@@ -11,6 +11,7 @@ use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Entity\EntityChangedTrait;
 use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\user\EntityOwnerTrait;
 
 /**
  * Defines the price list item entity.
@@ -53,6 +54,8 @@ use Drupal\Core\Entity\EntityTypeInterface;
  *     "bundle" = "type",
  *     "uuid" = "uuid",
  *     "status" = "status",
+ *     "owner" = "uid",
+ *     "uid" = "uid",
  *   },
  *   links = {
  *     "add-form" = "/price-list/{commerce_pricelist}/prices/add",
@@ -68,6 +71,7 @@ use Drupal\Core\Entity\EntityTypeInterface;
 class PriceListItem extends CommerceContentEntityBase implements PriceListItemInterface {
 
   use EntityChangedTrait;
+  use EntityOwnerTrait;
 
   /**
    * {@inheritdoc}
@@ -226,6 +230,11 @@ class PriceListItem extends CommerceContentEntityBase implements PriceListItemIn
    */
   public static function baseFieldDefinitions(EntityTypeInterface $entity_type) {
     $fields = parent::baseFieldDefinitions($entity_type);
+    $fields += static::ownerBaseFieldDefinitions($entity_type);
+
+    $fields['uid']
+      ->setLabel(t('Owner'))
+      ->setDescription(t('The user that owns this price list item.'));
 
     $fields['price_list_id'] = BaseFieldDefinition::create('entity_reference')
       ->setLabel(t('Price list'))
