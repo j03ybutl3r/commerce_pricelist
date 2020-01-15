@@ -374,6 +374,32 @@ class PriceListItemTest extends CommerceBrowserTestBase {
   }
 
   /**
+   * Make sure a file with a bad file ending is imported.
+   */
+  public function testImportDifferentLineEndings() {
+    $this->drupalGet($this->priceListItemCollectionUri);
+    $this->clickLink('Import prices');
+    $this->submitForm([
+      'files[csv]' => __DIR__ . '/../../fixtures/price_list_mac_line_endings.csv',
+      'mapping[purchasable_entity_column_type]' => 'sku',
+      'mapping[purchasable_entity_column]' => 'product_variation',
+      'mapping[quantity_column]' => 'qty',
+      'mapping[list_price_column]' => 'mrsp',
+      'mapping[price_column]' => 'price',
+      'mapping[currency_column]' => 'currency',
+      'options[delimiter]' => ',',
+      'options[enclosure]' => '"',
+    ], 'Import prices');
+    $this->assertSession()->pageTextContains('Imported 2 prices.');
+    $price_list_item_storage = $this->container->get('entity_type.manager')->getStorage('commerce_pricelist_item');
+    $price_list_item = $price_list_item_storage->load(1);
+    $this->assertEquals($this->priceList->id(), $price_list_item->getPriceListId());
+    $this->assertEquals($this->firstVariation->id(), $price_list_item->getPurchasableEntityId());
+    $this->assertEquals('1', $price_list_item->getQuantity());
+    $this->assertEquals(new Price('40', 'USD'), $price_list_item->getPrice());
+  }
+
+  /**
    * Tests exporting price list items.
    */
   public function testExportPriceListItems() {

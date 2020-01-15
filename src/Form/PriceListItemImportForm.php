@@ -322,6 +322,7 @@ class PriceListItemImportForm extends FormBase {
     $price_list = $price_list_storage->load($price_list_id);
     $purchasable_entity_storage = $entity_type_manager->getStorage($price_list->bundle());
     $header_mapping = static::buildHeaderMapping($mapping);
+    ini_set("auto_detect_line_endings", TRUE);
     $csv = new CsvFileObject($file_uri, TRUE, $header_mapping, $csv_options);
     if (empty($context['sandbox'])) {
       $context['sandbox']['import_total'] = (int) $csv->count();
