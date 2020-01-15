@@ -390,6 +390,7 @@ class PriceListItemTest extends CommerceBrowserTestBase {
         ]);
         $expected_rows[] = [
           'purchasable_entity' => $variation->getSku(),
+          'title' => $variation->getTitle(),
           'quantity' => $price_list_item->getQuantity(),
           'list_price' => '',
           'price' => $price_list_item->getPrice()->getNumber(),
@@ -407,6 +408,7 @@ class PriceListItemTest extends CommerceBrowserTestBase {
     $this->assertSession()->pageTextContains('Exported 40 prices.');
     $csv = new CsvFileObject('temporary://pricelist-1-prices.csv', TRUE, [
       'product_variation' => 'purchasable_entity',
+      'title' => 'title',
       'qty' => 'quantity',
       'msrp' => 'list_price',
       'price' => 'price',
