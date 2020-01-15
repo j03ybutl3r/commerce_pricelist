@@ -109,3 +109,17 @@ function commerce_pricelist_update_8203() {
     $definition_update_manager->updateEntityType($entity_type);
   }
 }
+
+/**
+ * Fix the entity definition mismatch caused by the "data_table" key removal.
+ */
+function commerce_pricelist_update_8204() {
+  /** @var \Drupal\Core\Entity\EntityLastInstalledSchemaRepositoryInterface $last_installed_schema_repository */
+  $last_installed_schema_repository = \Drupal::service('entity.last_installed_schema.repository');
+
+  foreach (['commerce_pricelist', 'commerce_pricelist_item'] as $entity_type_id) {
+    $entity_type = $last_installed_schema_repository->getLastInstalledDefinition($entity_type_id);
+    $entity_type->set('data_table', NULL);
+    $last_installed_schema_repository->setLastInstalledDefinition($entity_type);
+  }
+}
