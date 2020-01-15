@@ -102,6 +102,12 @@ class PriceListItemExportForm extends FormBase {
       '#default_value' => $default_purchasable_entity_column,
       '#required' => TRUE,
     ];
+    $form['mapping']['purchasable_entity_label_column'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Label column'),
+      '#default_value' => 'title',
+      '#required' => TRUE,
+    ];
     $form['mapping']['quantity_column'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Quantity column'),
@@ -337,6 +343,7 @@ class PriceListItemExportForm extends FormBase {
 
     return [
       $id,
+      $purchased_entity->label(),
       $price_list_item->getQuantity(),
       $list_price,
       $price_list_item->getPrice()->getNumber(),
