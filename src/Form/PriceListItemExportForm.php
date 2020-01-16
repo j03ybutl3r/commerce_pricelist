@@ -105,8 +105,8 @@ class PriceListItemExportForm extends FormBase {
     $form['mapping']['purchasable_entity_label_column'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Label column'),
+      '#description' => $this->t('Leave blank to exclude the label from the export.'),
       '#default_value' => 'title',
-      '#required' => TRUE,
     ];
     $form['mapping']['quantity_column'] = [
       '#type' => 'textfield',
@@ -236,8 +236,9 @@ class PriceListItemExportForm extends FormBase {
         ->count()
         ->execute();
 
+      $context['sandbox']['header_mapping'] = static::buildHeader($mapping);
       // Append the configured headers to the CSV file.
-      $csv->fputcsv(static::buildHeader($mapping));
+      $csv->fputcsv($context['sandbox']['header_mapping']);
       $context['sandbox']['export_total'] = (int) $price_list_item_count;
       $context['results']['external_url'] = $stream_wrapper->getExternalUrl();
       $context['results']['export_count'] = 0;
@@ -260,7 +261,7 @@ class PriceListItemExportForm extends FormBase {
     $price_list_items = $price_list_item_storage->loadMultiple($price_list_item_ids);
     /** @var \Drupal\commerce_pricelist\Entity\PriceListItemInterface $price_list_item */
     foreach ($price_list_items as $price_list_item) {
-      $row = static::buildRow($price_list_item);
+      $row = static::buildRow($price_list_item, $context['sandbox']['header_mapping']);
       $csv->fputcsv($row);
       $export_count++;
     }
@@ -320,7 +321,7 @@ class PriceListItemExportForm extends FormBase {
    */
   protected static function buildHeader(array $mapping) {
     // Nothing to do, but could potentially be overridden by a child class.
-    return $mapping;
+    return array_filter($mapping);
   }
 
   /**
@@ -328,11 +329,13 @@ class PriceListItemExportForm extends FormBase {
    *
    * @param \Drupal\commerce_pricelist\Entity\PriceListItemInterface $price_list_item
    *   The price list item.
+   * @param array $header_mapping
+   *   The CSV header mapping.
    *
    * @return array
    *   The CSV row for the given price list item.
    */
-  protected static function buildRow(PriceListItemInterface $price_list_item) {
+  protected static function buildRow(PriceListItemInterface $price_list_item, array $header_mapping) {
     $purchased_entity = $price_list_item->getPurchasableEntity();
     $id = $price_list_item->bundle() === 'commerce_product_variation' ? $purchased_entity->getSku() : $purchased_entity->id();
     $list_price = '';
@@ -340,15 +343,19 @@ class PriceListItemExportForm extends FormBase {
     if ($price_list_item->getListPrice()) {
       $list_price = $price_list_item->getListPrice()->getNumber();
     }
+    $row = [$id];
 
-    return [
-      $id,
-      $purchased_entity->label(),
+    // Include the title if it wasn't excluded from the export.
+    if (!empty($header_mapping['purchasable_entity_label_column'])) {
+      $row[] = $purchased_entity->label();
+    }
+
+    return array_merge($row, [
       $price_list_item->getQuantity(),
       $list_price,
       $price_list_item->getPrice()->getNumber(),
       $price_list_item->getPrice()->getCurrencyCode(),
-    ];
+    ]);
   }
 
 }
