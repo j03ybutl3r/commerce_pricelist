@@ -1,8 +1,8 @@
 name: 'Commerce Pricelist'
 type: module
 description: 'Allows defining prices for specific stores, customers, quantities using price lists.'
-core: 8.x
 package: 'Commerce (contrib)'
+core_version_requirement: ^8.7.7 || ^9
 dependencies:
   - commerce:commerce
   - commerce:commerce_store
