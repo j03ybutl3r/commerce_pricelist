@@ -46,17 +46,18 @@ class PriceListRepository implements PriceListRepositoryInterface {
    */
   public function loadItem(PurchasableEntityInterface $entity, $quantity, Context $context) {
     $price_list_items = $this->loadItems($entity, $context);
-
     if (empty($price_list_items)) {
       return NULL;
     }
+
     /** @var  \Drupal\commerce_pricelist\Entity\PriceListItemInterface[] $price_list_items */
     $price_list_items = array_filter($price_list_items, function ($price_list_item) use ($quantity) {
       return $price_list_item->getQuantity() <= $quantity;
     });
-
     $price_list_ids = $this->loadPriceListIds($entity->getEntityTypeId(), $context);
-    return $this->selectPriceListItem($price_list_items, $price_list_ids);
+    $price_list_item = $this->selectPriceListItem($price_list_items, $price_list_ids);
+
+    return $price_list_item;
   }
 
   /**
@@ -77,6 +78,7 @@ class PriceListRepository implements PriceListRepositoryInterface {
       $this->priceListItems[$cache_key] = [];
       return [];
     }
+
     $price_list_item_storage = $this->entityTypeManager->getStorage('commerce_pricelist_item');
     $query = $price_list_item_storage->getQuery();
     $query
@@ -95,8 +97,8 @@ class PriceListRepository implements PriceListRepositoryInterface {
     if (!empty($result)) {
       $price_list_items = $price_list_item_storage->loadMultiple($result);
     }
-
     $this->priceListItems[$cache_key] = $price_list_items;
+
     return $price_list_items;
   }
 
