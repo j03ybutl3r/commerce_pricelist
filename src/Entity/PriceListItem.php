@@ -257,6 +257,11 @@ class PriceListItem extends CommerceContentEntityBase implements PriceListItemIn
           'placeholder' => '',
         ],
       ]);
+    // Provide a default target_type for Views, which uses
+    // base field definitions without bundle overrides.
+    if (\Drupal::moduleHandler()->moduleExists('commerce_product')) {
+      $fields['purchasable_entity']->setSetting('target_type', 'commerce_product_variation');
+    }
 
     $fields['quantity'] = BaseFieldDefinition::create('decimal')
       ->setLabel(t('Quantity'))
