@@ -79,6 +79,7 @@ class PriceListRepositoryTest extends PriceListKernelTestBase {
    * Tests variation-based loading.
    *
    * @covers ::loadItem
+   * @covers ::loadItems
    */
   public function testVariation() {
     $repository = $this->container->get('commerce_pricelist.repository');
@@ -103,6 +104,7 @@ class PriceListRepositoryTest extends PriceListKernelTestBase {
    * Tests stores-based loading.
    *
    * @covers ::loadItem
+   * @covers ::loadItems
    */
   public function testStores() {
     $context = new Context($this->user, $this->store);
@@ -124,6 +126,7 @@ class PriceListRepositoryTest extends PriceListKernelTestBase {
    * Tests customer-based loading.
    *
    * @covers ::loadItem
+   * @covers ::loadItems
    */
   public function testCustomer() {
     $repository = $this->container->get('commerce_pricelist.repository');
@@ -144,6 +147,7 @@ class PriceListRepositoryTest extends PriceListKernelTestBase {
    * Tests roles-based loading.
    *
    * @covers ::loadItem
+   * @covers ::loadItems
    */
   public function testCustomerRoles() {
     $repository = $this->container->get('commerce_pricelist.repository');
@@ -185,6 +189,7 @@ class PriceListRepositoryTest extends PriceListKernelTestBase {
    * Tests dates-based loading.
    *
    * @covers ::loadItem
+   * @covers ::loadItems
    */
   public function testDates() {
     $repository = $this->container->get('commerce_pricelist.repository');
@@ -228,6 +233,7 @@ class PriceListRepositoryTest extends PriceListKernelTestBase {
    * Tests price list item selection based on the quantity, weight and status.
    *
    * @covers ::loadItem
+   * @covers ::loadItems
    */
   public function testQuantity() {
     $context = new Context($this->user, $this->store);
@@ -286,6 +292,39 @@ class PriceListRepositoryTest extends PriceListKernelTestBase {
     $context = new Context($another_user, $this->store);
     $price_list_item = $repository->loadItem($this->variation, 15, $context);
     $this->assertEquals(new Price('5.00', 'USD'), $price_list_item->getPrice());
+  }
+
+  /**
+   * Tests loading price list items for the given context.
+   *
+   * @covers ::loadItems
+   */
+  public function testLoadItems() {
+    $price_list_item = PriceListItem::create([
+      'type' => 'commerce_product_variation',
+      'price_list_id' => $this->priceList->id(),
+      'purchasable_entity' => $this->variation->id(),
+      'quantity' => '10',
+      'price' => new Price('7.00', 'USD'),
+    ]);
+    $price_list_item->save();
+    $price_list_item = $this->reloadEntity($price_list_item);
+    $another_price_list_item = PriceListItem::create([
+      'type' => 'commerce_product_variation',
+      'price_list_id' => $this->priceList->id(),
+      'purchasable_entity' => $this->variation->id(),
+      'quantity' => '3',
+      'price' => new Price('6.00', 'USD'),
+    ]);
+    $another_price_list_item->save();
+    $another_price_list_item = $this->reloadEntity($another_price_list_item);
+
+    /** @var \Drupal\commerce_pricelist\PriceListRepositoryInterface $repository */
+    $repository = $this->container->get('commerce_pricelist.repository');
+    $context = new Context($this->user, $this->store);
+    $price_list_items = $repository->loadItems($this->variation, $context);
+    $this->assertCount(3, $price_list_items);
+    $this->assertEquals(array_values($price_list_items), [$this->priceListItem, $another_price_list_item, $price_list_item]);
   }
 
 }

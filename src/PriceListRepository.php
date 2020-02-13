@@ -45,28 +45,43 @@ class PriceListRepository implements PriceListRepositoryInterface {
    * {@inheritdoc}
    */
   public function loadItem(PurchasableEntityInterface $entity, $quantity, Context $context) {
+    $price_list_items = $this->loadItems($entity, $context);
+
+    if (empty($price_list_items)) {
+      return NULL;
+    }
+    /** @var  \Drupal\commerce_pricelist\Entity\PriceListItemInterface[] $price_list_items */
+    $price_list_items = array_filter($price_list_items, function ($price_list_item) use ($quantity) {
+      return $price_list_item->getQuantity() <= $quantity;
+    });
+
+    $price_list_ids = $this->loadPriceListIds($entity->getEntityTypeId(), $context);
+    return $this->selectPriceListItem($price_list_items, $price_list_ids);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function loadItems(PurchasableEntityInterface $entity, Context $context) {
     $customer_id = $context->getCustomer()->id();
     $store_id = $context->getStore()->id();
     $date = DrupalDateTime::createFromTimestamp($context->getTime(), $context->getStore()->getTimezone());
     $now = $date->format(DateTimeItemInterface::DATETIME_STORAGE_FORMAT);
-    $cache_key = implode(':', [$entity->id(), $quantity, $customer_id, $store_id, $now]);
+    $cache_key = implode(':', [$entity->id(), $customer_id, $store_id, $now]);
     if (array_key_exists($cache_key, $this->priceListItems)) {
       return $this->priceListItems[$cache_key];
     }
 
     $price_list_ids = $this->loadPriceListIds($entity->getEntityTypeId(), $context);
     if (empty($price_list_ids)) {
-      $this->priceListItems[$cache_key] = NULL;
-      return NULL;
+      $this->priceListItems[$cache_key] = [];
+      return [];
     }
-
-    $price_list_item = NULL;
     $price_list_item_storage = $this->entityTypeManager->getStorage('commerce_pricelist_item');
     $query = $price_list_item_storage->getQuery();
     $query
       ->condition('type', $entity->getEntityTypeId())
       ->condition('price_list_id', $price_list_ids, 'IN')
-      ->condition('quantity', $quantity, '<=')
       ->condition('purchasable_entity', $entity->id())
       ->condition('status', TRUE)
       ->addTag('commerce_pricelist_item_query')
@@ -75,13 +90,14 @@ class PriceListRepository implements PriceListRepositoryInterface {
       ->addMetaData('store_id', $store_id)
       ->sort('quantity', 'ASC');
     $result = $query->execute();
+
+    $price_list_items = [];
     if (!empty($result)) {
       $price_list_items = $price_list_item_storage->loadMultiple($result);
-      $price_list_item = $this->selectPriceListItem($price_list_items, $price_list_ids);
     }
-    $this->priceListItems[$cache_key] = $price_list_item;
 
-    return $price_list_item;
+    $this->priceListItems[$cache_key] = $price_list_items;
+    return $price_list_items;
   }
 
   /**

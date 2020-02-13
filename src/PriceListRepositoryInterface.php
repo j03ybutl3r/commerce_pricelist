@@ -22,4 +22,17 @@ interface PriceListRepositoryInterface {
    */
   public function loadItem(PurchasableEntityInterface $entity, $quantity, Context $context);
 
+  /**
+   * Loads the price list items for the given purchasable entity.
+   *
+   * @param \Drupal\commerce\PurchasableEntityInterface $entity
+   *   The purchasable entity.
+   * @param \Drupal\commerce\Context $context
+   *   The context.
+   *
+   * @return \Drupal\commerce_pricelist\Entity\PriceListItemInterface[]
+   *   The price list items.
+   */
+  public function loadItems(PurchasableEntityInterface $entity, Context $context);
+
 }
