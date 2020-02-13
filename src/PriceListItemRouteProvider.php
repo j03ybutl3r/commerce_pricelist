@@ -2,6 +2,7 @@
 
 namespace Drupal\commerce_pricelist;
 
+use Drupal\commerce_pricelist\Controller\PriceListController;
 use Drupal\commerce_pricelist\Form\PriceListItemExportForm;
 use Drupal\commerce_pricelist\Form\PriceListItemImportForm;
 use Drupal\Core\Entity\EntityTypeInterface;
@@ -75,6 +76,7 @@ class PriceListItemRouteProvider extends AdminHtmlRouteProvider {
     ]);
     // AdminHtmlRouteProvider sets _admin_route for all routes except this one.
     $route->setOption('_admin_route', TRUE);
+    $route->setDefault('_title_callback', PriceListController::class . '::priceListItemsTitle');
 
     return $route;
   }
