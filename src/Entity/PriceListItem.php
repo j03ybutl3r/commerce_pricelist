@@ -33,7 +33,7 @@ use Drupal\user\EntityOwnerTrait;
  *     "storage" = "Drupal\commerce\CommerceContentEntityStorage",
  *     "list_builder" = "Drupal\commerce_pricelist\PriceListItemListBuilder",
  *     "view_builder" = "Drupal\Core\Entity\EntityViewBuilder",
- *     "views_data" = "Drupal\views\EntityViewsData",
+ *     "views_data" = "Drupal\commerce\CommerceEntityViewsData",
  *     "form" = {
  *       "add" = "Drupal\commerce_pricelist\Form\PriceListItemForm",
  *       "edit" = "Drupal\commerce_pricelist\Form\PriceListItemForm",
