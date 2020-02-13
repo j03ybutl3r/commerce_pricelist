@@ -31,7 +31,7 @@ use Drupal\user\UserInterface;
  *     "storage" = "Drupal\commerce\CommerceContentEntityStorage",
  *     "view_builder" = "Drupal\Core\Entity\EntityViewBuilder",
  *     "list_builder" = "Drupal\commerce_pricelist\PriceListListBuilder",
- *     "views_data" = "Drupal\views\EntityViewsData",
+ *     "views_data" = "Drupal\commerce\CommerceEntityViewsData",
  *     "form" = {
  *       "default" = "Drupal\commerce_pricelist\Form\PriceListForm",
  *       "add" = "Drupal\commerce_pricelist\Form\PriceListForm",
