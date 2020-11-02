@@ -122,7 +122,7 @@ function template_preprocess_commerce_pricelist(array &$variables) {
 function commerce_pricelist_file_download($uri) {
   // Check if the file being downloaded is a price list CSV export.
   $scheme = \Drupal::service('file_system')->uriScheme($uri);
-  $target = file_uri_target($uri);
+  $target = \Drupal::service('stream_wrapper_manager')->getTarget($uri);
   if ($scheme == 'temporary' && strpos($target, 'pricelist-') === 0) {
     $current_user = \Drupal::currentUser();
     if (!$current_user->hasPermission('administer commerce_pricelist')) {
