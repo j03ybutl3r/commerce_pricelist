@@ -127,14 +127,38 @@ class PriceList extends CommerceContentEntityBase implements PriceListInterface 
    * {@inheritdoc}
    */
   public function getCustomer() {
-    return $this->get('customer')->entity;
+    if ($this->get('customers')->isEmpty()) {
+      return NULL;
+    }
+    return $this->get('customers')->get(0)->entity;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getCustomers() {
+    $customers = [];
+    foreach ($this->get('customers') as $field_item) {
+      if ($field_item->isEmpty() || !$field_item->entity) {
+        continue;
+      }
+      $customers[] = $field_item->entity;
+    }
+    return $customers;
   }
 
   /**
    * {@inheritdoc}
    */
   public function setCustomer(UserInterface $user) {
-    $this->set('customer', $user);
+    return $this->setCustomers([$user]);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setCustomers(array $users) {
+    $this->set('customers', $users);
     return $this;
   }
 
@@ -142,14 +166,17 @@ class PriceList extends CommerceContentEntityBase implements PriceListInterface 
    * {@inheritdoc}
    */
   public function getCustomerId() {
-    return $this->get('customer')->target_id;
+    if ($this->get('customers')->isEmpty()) {
+      return NULL;
+    }
+    return $this->get('customers')->get(0)->target_id;
   }
 
   /**
    * {@inheritdoc}
    */
   public function setCustomerId($uid) {
-    $this->set('customer', $uid);
+    $this->set('customers', ['target_id' => $uid]);
     return $this;
   }
 
@@ -306,17 +333,17 @@ class PriceList extends CommerceContentEntityBase implements PriceListInterface 
         'weight' => 2,
       ]);
 
-    $fields['customer'] = BaseFieldDefinition::create('entity_reference')
-      ->setLabel(t('Customer'))
-      ->setDescription(t('The customer for which the price list is valid.'))
+    $fields['customers'] = BaseFieldDefinition::create('entity_reference')
+      ->setLabel(t('Customers'))
+      ->setDescription(t('The customers for which the price list is valid.'))
       ->setSetting('target_type', 'user')
       ->setSetting('handler', 'default')
+      ->setCardinality(BaseFieldDefinition::CARDINALITY_UNLIMITED)
       ->setDisplayOptions('form', [
         'type' => 'entity_reference_autocomplete',
         'settings' => [
           'match_operator' => 'CONTAINS',
           'size' => '60',
-          'autocomplete_type' => 'tags',
           'placeholder' => '',
         ],
       ]);

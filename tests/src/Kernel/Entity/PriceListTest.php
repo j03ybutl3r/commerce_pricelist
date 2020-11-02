@@ -25,7 +25,9 @@ class PriceListTest extends PriceListKernelTestBase {
    * @covers ::getStoreIds
    * @covers ::setStoreIds
    * @covers ::getCustomer
+   * @covers ::getCustomers
    * @covers ::setCustomer
+   * @covers ::setCustomers
    * @covers ::getCustomerId
    * @covers ::setCustomerId
    * @covers ::getCustomerRoles
@@ -62,10 +64,12 @@ class PriceListTest extends PriceListKernelTestBase {
     $price_list->setCustomer($this->user);
     $this->assertEquals($this->user, $price_list->getCustomer());
     $this->assertEquals($this->user->id(), $price_list->getCustomerId());
-    $price_list->set('customer', NULL);
+    $price_list->set('customers', NULL);
     $price_list->setCustomerId($this->user->id());
     $this->assertEquals($this->user->id(), $price_list->getCustomerId());
     $this->assertEquals($this->user, $price_list->getCustomer());
+    $price_list->setCustomers([$this->user]);
+    $this->assertEquals([$this->user], $price_list->getCustomers());
 
     $price_list->setCustomerRoles(['authenticated']);
     $this->assertEquals(['authenticated'], $price_list->getCustomerRoles());

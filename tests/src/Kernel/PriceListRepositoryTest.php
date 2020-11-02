@@ -128,7 +128,7 @@ class PriceListRepositoryTest extends PriceListKernelTestBase {
    * @covers ::loadItem
    * @covers ::loadItems
    */
-  public function testCustomer() {
+  public function testCustomers() {
     $repository = $this->container->get('commerce_pricelist.repository');
     $customer = $this->createUser();
     $this->priceList->setCustomer($customer);

@@ -46,15 +46,16 @@ class PriceListTest extends CommerceBrowserTestBase {
       'customer_eligibility' => 'customer_roles',
       "customer_roles[$role]" => $role,
       // The customer should not be persisted due to the role being used.
-      'customer[0][target_id]' => $this->adminUser->label() . ' (' . $this->adminUser->id() . ')',
+      'customers[0][target_id]' => $this->adminUser->label() . ' (' . $this->adminUser->id() . ')',
     ], 'Save');
     $this->assertSession()->pageTextContains('Saved the Black Friday 2018 price list.');
 
+    /** @var \Drupal\commerce_pricelist\Entity\PriceListInterface $price_list */
     $price_list = PriceList::load(1);
     $this->assertEquals('Black Friday 2018', $price_list->getName());
     $this->assertEquals('2018-07-07 13:37:00', $price_list->getStartDate()->format('Y-m-d H:i:s'));
     $this->assertEquals([$role], $price_list->getCustomerRoles());
-    $this->assertEmpty($price_list->getCustomerId());
+    $this->assertEmpty($price_list->getCustomers());
   }
 
   /**
@@ -80,19 +81,21 @@ class PriceListTest extends CommerceBrowserTestBase {
       'name[0][value]' => 'Random list',
       'start_date[0][value][date]' => '2018-08-08',
       'start_date[0][value][time]' => '13:37:15',
-      'customer_eligibility' => 'customer',
-      'customer[0][target_id]' => $this->adminUser->label() . ' (' . $this->adminUser->id() . ')',
+      'customer_eligibility' => 'customers',
+      'customers[0][target_id]' => $this->adminUser->label() . ' (' . $this->adminUser->id() . ')',
       // The role should not be persisted due to the customer being used.
       "customer_roles[$role]" => $role,
     ], 'Save');
     $this->assertSession()->pageTextContains('Saved the Random list price list.');
 
     \Drupal::service('entity_type.manager')->getStorage('commerce_pricelist')->resetCache([$price_list->id()]);
+    /** @var \Drupal\commerce_pricelist\Entity\PriceListInterface $price_list */
     $price_list = PriceList::load(1);
     $this->assertEquals('Random list', $price_list->getName());
     $this->assertEquals('2018-08-08 13:37:15', $price_list->getStartDate()->format('Y-m-d H:i:s'));
     $this->assertEmpty($price_list->getCustomerRoles());
-    $this->assertEquals($this->adminUser->id(), $price_list->getCustomerId());
+    $this->adminUser = $this->reloadEntity($this->adminUser);
+    $this->assertEquals([$this->adminUser], $price_list->getCustomers());
   }
 
   /**

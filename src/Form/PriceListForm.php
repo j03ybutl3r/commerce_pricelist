@@ -74,8 +74,8 @@ class PriceListForm extends ContentEntityForm {
     // Hide the customer/customer_roles fields behind a set of radios, to
     // emphasize that they are mutually exclusive.
     $default_value = 'everyone';
-    if ($price_list->getCustomerId()) {
-      $default_value = 'customer';
+    if (!$price_list->get('customers')->isEmpty()) {
+      $default_value = 'customers';
     }
     elseif ($price_list->getCustomerRoles()) {
       $default_value = 'customer_roles';
@@ -85,14 +85,14 @@ class PriceListForm extends ContentEntityForm {
       '#title' => $this->t('Customer eligibility'),
       '#options' => [
         'everyone' => $this->t('Everyone'),
-        'customer' => $this->t('Specific customer'),
+        'customers' => $this->t('Specific customers'),
         'customer_roles' => $this->t('Customer roles'),
       ],
       '#default_value' => $default_value,
       '#weight' => 10,
     ];
-    $form['customer']['widget'][0]['target_id']['#states']['visible'] = [
-      'input[name="customer_eligibility"]' => ['value' => 'customer'],
+    $form['customers']['#states']['visible'] = [
+      'input[name="customer_eligibility"]' => ['value' => 'customers'],
     ];
     $form['customer_roles']['widget']['#states']['visible'] = [
       'input[name="customer_eligibility"]' => ['value' => 'customer_roles'],
@@ -112,7 +112,7 @@ class PriceListForm extends ContentEntityForm {
    * Process callback: assigns new weights to customer fields.
    */
   public static function modifyCustomerFieldWeights($element, FormStateInterface $form_state, $form) {
-    $element['customer']['#weight'] = 11;
+    $element['customers']['#weight'] = 11;
     $element['customer_roles']['#weight'] = 11;
 
     return $element;
@@ -144,15 +144,15 @@ class PriceListForm extends ContentEntityForm {
     $price_list = $this->entity;
     // Don't persist customer values that are not going to be used.
     $customer_eligibility = $form_state->getValue('customer_eligibility');
-    if ($customer_eligibility == 'everyone') {
-      $price_list->setCustomerId(NULL);
+    if ($customer_eligibility === 'everyone') {
+      $price_list->set('customers', NULL);
       $price_list->setCustomerRoles([]);
     }
-    elseif ($customer_eligibility == 'customer') {
+    elseif ($customer_eligibility === 'customers') {
       $price_list->setCustomerRoles([]);
     }
-    elseif ($customer_eligibility == 'customer_roles') {
-      $price_list->setCustomerId(NULL);
+    elseif ($customer_eligibility === 'customer_roles') {
+      $price_list->set('customers', NULL);
     }
     $price_list->save();
     $this->postSave($price_list, $this->operation);

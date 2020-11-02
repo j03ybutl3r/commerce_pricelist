@@ -1,4 +1,4 @@
-<?php declare(strict_types = 1);
+<?php
 
 namespace Drupal\commerce_pricelist\Controller;
 
@@ -13,7 +13,7 @@ class PriceListController {
   /**
    * Provides the title callback for the price list items collection route.
    *
-   * @param \Drupal\Core\Routing\RouteMatchInterface
+   * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
    *   The route match.
    *
    * @return string

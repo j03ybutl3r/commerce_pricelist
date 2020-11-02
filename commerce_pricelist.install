@@ -6,8 +6,11 @@
  */
 
 use Drupal\Core\Field\BaseFieldDefinition;
+use Drupal\commerce\CommerceContentEntityStorage;
 use Drupal\commerce_pricelist\Entity\PriceList;
 use Drupal\commerce_pricelist\Entity\PriceListItem;
+use Drupal\commerce_pricelist\Event\PriceListEvent;
+use Drupal\commerce_pricelist\Event\PriceListItemEvent;
 
 /**
  * Replace the 'customer_role' field with the 'customer_roles' field.
@@ -61,13 +64,13 @@ function commerce_pricelist_update_8201() {
 function commerce_pricelist_update_8202() {
   $definition_update_manager = \Drupal::entityDefinitionUpdateManager();
   $entity_type = $definition_update_manager->getEntityType('commerce_pricelist');
-  $entity_type->setHandlerClass('event', \Drupal\commerce_pricelist\Event\PriceListEvent::class);
-  $entity_type->setHandlerClass('storage', \Drupal\commerce\CommerceContentEntityStorage::class);
+  $entity_type->setHandlerClass('event', PriceListEvent::class);
+  $entity_type->setHandlerClass('storage', CommerceContentEntityStorage::class);
   $definition_update_manager->updateEntityType($entity_type);
 
   $entity_type = $definition_update_manager->getEntityType('commerce_pricelist_item');
-  $entity_type->setHandlerClass('event', \Drupal\commerce_pricelist\Event\PriceListItemEvent::class);
-  $entity_type->setHandlerClass('storage', \Drupal\commerce\CommerceContentEntityStorage::class);
+  $entity_type->setHandlerClass('event', PriceListItemEvent::class);
+  $entity_type->setHandlerClass('storage', CommerceContentEntityStorage::class);
   $definition_update_manager->updateEntityType($entity_type);
 }
 
@@ -122,4 +125,62 @@ function commerce_pricelist_update_8204() {
     $entity_type->set('data_table', NULL);
     $last_installed_schema_repository->setLastInstalledDefinition($entity_type);
   }
+}
+
+/**
+ * Replace the 'customer' field with the 'customers' field.
+ */
+function commerce_pricelist_update_8205() {
+  $definition_update_manager = \Drupal::entityDefinitionUpdateManager();
+
+  // Create the customers field.
+  $storage_definition = BaseFieldDefinition::create('entity_reference')
+    ->setLabel(t('Customers'))
+    ->setDescription(t('The customers for which the price list is valid.'))
+    ->setCardinality(BaseFieldDefinition::CARDINALITY_UNLIMITED)
+    ->setSetting('target_type', 'user')
+    ->setDisplayOptions('form', [
+      'type' => 'entity_reference_autocomplete',
+      'settings' => [
+        'match_operator' => 'CONTAINS',
+        'size' => '60',
+        'placeholder' => '',
+      ],
+    ]);
+  $definition_update_manager->installFieldStorageDefinition('customers', 'commerce_pricelist', 'commerce_pricelist', $storage_definition);
+
+  // Seed the new field manually, because Drupal core doesn't support
+  // using setInitialValueFromField() on a multivalue field.
+  $database = \Drupal::database();
+  $customer_ids = $database->select('commerce_pricelist', 'cp')
+    ->fields('cp', ['id', 'type', 'customer'])
+    ->where('cp.customer IS NOT NULL')
+    ->execute()
+    ->fetchAllAssoc('id');
+
+  $insert_query = $database->insert('commerce_pricelist__customers')
+    ->fields(['bundle', 'deleted', 'entity_id', 'revision_id', 'langcode', 'delta', 'customers_target_id']);
+  foreach ($customer_ids as $id => $data) {
+    $insert_query->values([$data->type, 0, $id, $id, 'und', 0, $data->customer]);
+  }
+  $insert_query->execute();
+
+  // Remove the customer field.
+  $storage_definition = BaseFieldDefinition::create('entity_reference')
+    ->setLabel(t('Customer'))
+    ->setName('customer')
+    ->setTargetEntityTypeId('commerce_pricelist')
+    ->setDescription(t('The customer for which the price list is valid.'))
+    ->setSetting('target_type', 'user')
+    ->setSetting('handler', 'default')
+    ->setDisplayOptions('form', [
+      'type' => 'entity_reference_autocomplete',
+      'settings' => [
+        'match_operator' => 'CONTAINS',
+        'size' => '60',
+        'autocomplete_type' => 'tags',
+        'placeholder' => '',
+      ],
+    ]);
+  $definition_update_manager->uninstallFieldStorageDefinition($storage_definition);
 }

@@ -38,8 +38,22 @@ interface PriceListInterface extends ContentEntityInterface, EntityChangedInterf
    * @return \Drupal\user\UserInterface|null
    *   The customer user entity, or NULL if the price list is not limited to a
    *   specific customer.
+   *
+   * @deprecated in commerce_pricelist:8.x-2.0 and is removed from
+   *   commerce_pricelist:8.x-3.0. Use $this->getCustomers() instead.
+   *
+   * @see https://www.drupal.org/project/commerce_pricelist/issues/3171289
    */
   public function getCustomer();
+
+  /**
+   * Gets the customers.
+   *
+   * @return \Drupal\user\UserInterface|null
+   *   The customers user entities, or NULL if the price list is not limited to
+   *   specific customers.
+   */
+  public function getCustomers();
 
   /**
    * Sets the customer.
@@ -48,8 +62,23 @@ interface PriceListInterface extends ContentEntityInterface, EntityChangedInterf
    *   The customer.
    *
    * @return $this
+   *
+   * @deprecated in commerce_pricelist:8.x-2.0 and is removed from
+   *   commerce_pricelist:8.x-3.0. Use $this->setCustomers() instead.
+   *
+   * @see https://www.drupal.org/project/commerce_pricelist/issues/3171289
    */
   public function setCustomer(UserInterface $user);
+
+  /**
+   * Sets the customers.
+   *
+   * @param \Drupal\user\UserInterface[] $users
+   *   The customers.
+   *
+   * @return $this
+   */
+  public function setCustomers(array $users);
 
   /**
    * Gets the customer ID.
@@ -57,6 +86,11 @@ interface PriceListInterface extends ContentEntityInterface, EntityChangedInterf
    * @return int|null
    *   The customer ID, or NULL if the price list is not limited to a specific
    *   customer.
+   *
+   * @deprecated in commerce_pricelist:8.x-2.0 and is removed from
+   *   commerce_pricelist:8.x-3.0. Use $this->getCustomers() instead.
+   *
+   * @see https://www.drupal.org/project/commerce_pricelist/issues/3171289
    */
   public function getCustomerId();
 
@@ -67,6 +101,11 @@ interface PriceListInterface extends ContentEntityInterface, EntityChangedInterf
    *   The customer ID.
    *
    * @return $this
+   *
+   * @deprecated in commerce_pricelist:8.x-2.0 and is removed from
+   *   commerce_pricelist:8.x-3.0. Use $this->setCustomers() instead.
+   *
+   * @see https://www.drupal.org/project/commerce_pricelist/issues/3171289
    */
   public function setCustomerId($uid);
 
