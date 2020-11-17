@@ -12,6 +12,7 @@ use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\Element;
 use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\StreamWrapper\StreamWrapperManager;
 use Drupal\Core\Url;
 use Drupal\views\ViewExecutable;
 
@@ -121,8 +122,8 @@ function template_preprocess_commerce_pricelist(array &$variables) {
  */
 function commerce_pricelist_file_download($uri) {
   // Check if the file being downloaded is a price list CSV export.
-  $scheme = \Drupal::service('file_system')->uriScheme($uri);
-  $target = \Drupal::service('stream_wrapper_manager')->getTarget($uri);
+  $scheme = StreamWrapperManager::getScheme($uri);
+  $target = StreamWrapperManager::getTarget($uri);
   if ($scheme == 'temporary' && strpos($target, 'pricelist-') === 0) {
     $current_user = \Drupal::currentUser();
     if (!$current_user->hasPermission('administer commerce_pricelist')) {
