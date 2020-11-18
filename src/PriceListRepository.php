@@ -90,6 +90,7 @@ class PriceListRepository implements PriceListRepositoryInterface {
       ->addMetaData('price_list_ids', $price_list_ids)
       ->addMetaData('customer_id', $customer_id)
       ->addMetaData('store_id', $store_id)
+      ->addMetaData('context', $context)
       ->sort('quantity', 'ASC');
     $result = $query->execute();
 
@@ -187,7 +188,8 @@ class PriceListRepository implements PriceListRepositoryInterface {
       ->sort('id', 'DESC')
       ->addTag('commerce_pricelist_query')
       ->addMetaData('customer_id', $customer_id)
-      ->addMetaData('store_id', $store_id);
+      ->addMetaData('store_id', $store_id)
+      ->addMetaData('context', $context);
     $result = $query->execute();
     $price_list_ids = array_values($result);
     $this->priceListIds[$cache_key] = $price_list_ids;
