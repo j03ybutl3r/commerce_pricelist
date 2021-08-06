@@ -66,7 +66,7 @@ class PriceListItemTest extends CommerceBrowserTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
 
     // Turn off title generation to allow explicit values to be used.

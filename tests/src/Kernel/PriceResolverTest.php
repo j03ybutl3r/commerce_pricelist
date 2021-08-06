@@ -40,7 +40,7 @@ class PriceResolverTest extends PriceListKernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
 
     $variation = ProductVariation::create([

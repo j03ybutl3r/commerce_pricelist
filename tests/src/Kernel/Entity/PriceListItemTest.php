@@ -34,7 +34,7 @@ class PriceListItemTest extends PriceListKernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
 
     $price_list = PriceList::create([
