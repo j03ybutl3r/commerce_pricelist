@@ -66,6 +66,7 @@ use Drupal\user\EntityOwnerTrait;
  *     "import-form" = "/price-list/{commerce_pricelist}/prices/import",
  *     "collection" = "/price-list/{commerce_pricelist}/prices",
  *   },
+ *   field_ui_base_route = "entity.commerce_pricelist_item.bundle_page"
  * )
  */
 class PriceListItem extends CommerceContentEntityBase implements PriceListItemInterface {
@@ -249,6 +250,7 @@ class PriceListItem extends CommerceContentEntityBase implements PriceListItemIn
       ->setLabel(t('Purchasable entity'))
       ->setDescription(t('The purchasable entity.'))
       ->setRequired(TRUE)
+      ->setDisplayConfigurable('form', TRUE)
       ->setDisplayOptions('form', [
         'type' => 'entity_reference_autocomplete',
         'weight' => -1,
@@ -271,6 +273,7 @@ class PriceListItem extends CommerceContentEntityBase implements PriceListItemIn
       ->setSetting('unsigned', TRUE)
       ->setSetting('min', 0)
       ->setDefaultValue(1)
+      ->setDisplayConfigurable('form', TRUE)
       ->setDisplayOptions('form', [
         'type' => 'commerce_quantity',
       ]);
@@ -282,6 +285,7 @@ class PriceListItem extends CommerceContentEntityBase implements PriceListItemIn
         'label' => 'above',
         'type' => 'commerce_price_default',
       ])
+      ->setDisplayConfigurable('form', TRUE)
       ->setDisplayOptions('form', [
         'type' => 'commerce_list_price',
       ]);
@@ -294,6 +298,7 @@ class PriceListItem extends CommerceContentEntityBase implements PriceListItemIn
         'label' => 'above',
         'type' => 'commerce_price_default',
       ])
+      ->setDisplayConfigurable('form', TRUE)
       ->setDisplayOptions('form', [
         'type' => 'commerce_price_default',
       ]);
@@ -307,6 +312,7 @@ class PriceListItem extends CommerceContentEntityBase implements PriceListItemIn
         'on_label' => t('Enabled'),
         'off_label' => t('Disabled'),
       ])
+      ->setDisplayConfigurable('form', TRUE)
       ->setDisplayOptions('form', [
         'type' => 'options_buttons',
       ]);

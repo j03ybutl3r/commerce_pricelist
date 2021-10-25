@@ -67,6 +67,7 @@ use Drupal\user\UserInterface;
  *     "delete-multiple-form" = "/admin/commerce/price-lists/delete",
  *     "collection" = "/admin/commerce/price-lists",
  *   },
+ *   field_ui_base_route = "entity.commerce_pricelist.bundle_list"
  * )
  */
 class PriceList extends CommerceContentEntityBase implements PriceListInterface {
@@ -328,6 +329,7 @@ class PriceList extends CommerceContentEntityBase implements PriceListInterface 
       ->setSetting('target_type', 'commerce_store')
       ->setSetting('handler', 'default')
       ->setTranslatable(TRUE)
+      ->setDisplayConfigurable('form', TRUE)
       ->setDisplayOptions('form', [
         'type' => 'commerce_entity_select',
         'weight' => 2,
@@ -374,6 +376,7 @@ class PriceList extends CommerceContentEntityBase implements PriceListInterface 
       ->setRequired(FALSE)
       ->setSetting('datetime_type', 'datetime')
       ->setSetting('datetime_optional_label', t('Provide an end date'))
+      ->setDisplayConfigurable('form', TRUE)
       ->setDisplayOptions('form', [
         'type' => 'commerce_store_datetime',
         'weight' => 6,
@@ -393,6 +396,7 @@ class PriceList extends CommerceContentEntityBase implements PriceListInterface 
         'on_label' => t('Enabled'),
         'off_label' => t('Disabled'),
       ])
+      ->setDisplayConfigurable('form', TRUE)
       ->setDisplayOptions('form', [
         'type' => 'options_buttons',
       ]);

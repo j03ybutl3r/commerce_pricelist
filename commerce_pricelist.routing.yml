@@ -15,3 +15,55 @@ entity.commerce_product_variation.add_price_form:
     commerce_product: '\d+'
     commerce_product_variation: '\d+'
     _entity_create_access: 'commerce_pricelist_item'
+
+entity.commerce_pricelist.bundle_list:
+  path: '/admin/commerce/config/price-lists/types'
+  defaults:
+    _controller: 'Drupal\commerce_pricelist\Controller\PriceListBundleController::adminPage'
+    _title: 'Price list types'
+  requirements:
+    _permission: 'administer commerce_pricelist'
+  options:
+    _admin_route: 'TRUE'
+
+entity.commerce_pricelist_item.bundle_list:
+  path: '/admin/commerce/config/price-lists/item-types'
+  defaults:
+    _controller: 'Drupal\commerce_pricelist\Controller\PriceListBundleController::adminPage'
+    _title: 'Price list item types'
+  requirements:
+    _permission: 'administer commerce_pricelist'
+  options:
+    _admin_route: 'TRUE'
+
+entity.commerce_pricelist.bundle_page:
+  path: '/admin/commerce/config/price-lists/types/{bundle}'
+  defaults:
+    _controller: 'Drupal\commerce_pricelist\Controller\PriceListBundleController::bundlePage'
+    _title: 'Settings'
+  requirements:
+    _permission: 'administer commerce_pricelist'
+  options:
+    _admin_route: 'TRUE'
+    parameters:
+      bundle: 'string'
+
+entity.commerce_pricelist_item.bundle_page:
+  path: '/admin/commerce/config/price-lists/item-types/{bundle}'
+  defaults:
+    _controller: 'Drupal\commerce_pricelist\Controller\PriceListBundleController::bundlePage'
+    _title: 'Settings'
+  requirements:
+    _permission: 'administer commerce_pricelist'
+  options:
+    _admin_route: 'TRUE'
+    parameters:
+      bundle: 'string'
+
+commerce_pricelist.configuration:
+  path: '/admin/commerce/config/price-lists'
+  defaults:
+    _controller: '\Drupal\system\Controller\SystemController::systemAdminMenuBlockPage'
+    _title: 'Price lists'
+  requirements:
+    _permission: 'access commerce administration pages'
