@@ -1,6 +1,9 @@
 langcode: en
 status: true
 dependencies:
+  enforced:
+    module:
+      - commerce_product
   module:
     - commerce_price
     - commerce_pricelist
