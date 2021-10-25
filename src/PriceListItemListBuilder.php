@@ -94,7 +94,8 @@ class PriceListItemListBuilder extends EntityListBuilder {
    */
   public function buildRow(EntityInterface $entity) {
     /* @var \Drupal\commerce_pricelist\Entity\PriceListItemInterface $entity */
-    $row['purchasable_entity'] = $entity->getPurchasableEntity()->getOrderItemTitle();
+    $purchasable_entity = $entity->getPurchasableEntity();
+    $row['purchasable_entity'] = $purchasable_entity ? $purchasable_entity->getOrderItemTitle() : '';
     $row['quantity'] = Calculator::trim($entity->getQuantity());
     $row['list_price'] = [
       'data' => [

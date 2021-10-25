@@ -89,7 +89,8 @@ class PriceListItem extends CommerceContentEntityBase implements PriceListItemIn
     if ($this->isNew()) {
       return '';
     }
-    $purchasable_entity_label = $this->getPurchasableEntity()->label();
+    $purchasable_entity = $this->getPurchasableEntity();
+    $purchasable_entity_label = $purchasable_entity ? $purchasable_entity->label() : '';
     $currency_formatter = \Drupal::service('commerce_price.currency_formatter');
     $price = $this->getPrice();
     $formatted_price = $currency_formatter->format($price->getNumber(), $price->getCurrencyCode());
