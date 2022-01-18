@@ -67,7 +67,7 @@ use Drupal\user\UserInterface;
  *     "delete-multiple-form" = "/admin/commerce/price-lists/delete",
  *     "collection" = "/admin/commerce/price-lists",
  *   },
- *   field_ui_base_route = "entity.commerce_pricelist.bundle_list"
+ *   field_ui_base_route = "entity.commerce_pricelist.bundle_page"
  * )
  */
 class PriceList extends CommerceContentEntityBase implements PriceListInterface {
