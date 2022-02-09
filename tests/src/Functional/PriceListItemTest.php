@@ -563,4 +563,47 @@ class PriceListItemTest extends CommerceBrowserTestBase {
     $this->assertEquals(new Price('50', 'USD'), $price_list_item->getPrice());
   }
 
+  /**
+   * Tests disabling a price list item.
+   */
+  public function testDisable() {
+    $price_list_item = $this->createEntity('commerce_pricelist_item', [
+      'type' => 'commerce_product_variation',
+      'price_list_id' => $this->priceList->id(),
+      'purchasable_entity' => $this->firstVariation->id(),
+      'quantity' => '10',
+      'price' => new Price('50', 'USD'),
+    ]);
+
+    $this->assertTrue($price_list_item->isEnabled());
+    $this->drupalGet($price_list_item->toUrl('disable-form'));
+    $this->assertSession()->pageTextContains(t('Are you sure you want to disable the price list item @label?', ['@label' => $price_list_item->label()]));
+    $this->submitForm([], t('Disable'));
+
+    $price_list_item = $this->reloadEntity($price_list_item);
+    $this->assertFalse($price_list_item->isEnabled());
+  }
+
+  /**
+   * Tests enabling a price list item.
+   */
+  public function testEnable() {
+    $price_list_item = $this->createEntity('commerce_pricelist_item', [
+      'type' => 'commerce_product_variation',
+      'price_list_id' => $this->priceList->id(),
+      'purchasable_entity' => $this->firstVariation->id(),
+      'quantity' => '10',
+      'price' => new Price('50', 'USD'),
+      'status' => FALSE,
+    ]);
+
+    $this->assertFalse($price_list_item->isEnabled());
+    $this->drupalGet($price_list_item->toUrl('enable-form'));
+    $this->assertSession()->pageTextContains(t('Are you sure you want to enable the price list item @label?', ['@label' => $price_list_item->label()]));
+    $this->submitForm([], t('Enable'));
+
+    $price_list_item = $this->reloadEntity($price_list_item);
+    $this->assertTrue($price_list_item->isEnabled());
+  }
+
 }

@@ -27,6 +27,11 @@ class PriceListItemRouteProvider extends AdminHtmlRouteProvider {
     if ($import_route = $this->getImportFormRoute($entity_type)) {
       $collection->add("entity.{$entity_type_id}.import_form", $import_route);
     }
+    foreach (['enable', 'disable'] as $operation) {
+      if ($form_route = $this->getEnableDisableFormRoute($entity_type, $operation)) {
+        $collection->add("entity.{$entity_type_id}.{$operation}_form", $form_route);
+      }
+    }
 
     return $collection;
   }
@@ -131,6 +136,38 @@ class PriceListItemRouteProvider extends AdminHtmlRouteProvider {
         ->setOption('parameters', [
           'commerce_pricelist' => ['type' => 'entity:commerce_pricelist'],
         ])
+        ->setOption('_admin_route', TRUE);
+
+      return $route;
+    }
+  }
+
+  /**
+   * Gets the enable/disable form route.
+   *
+   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
+   *   The entity type.
+   * @param string $operation
+   *   The 'operation' (e.g 'disable', 'enable').
+   *
+   * @return \Symfony\Component\Routing\Route|null
+   *   The generated route, if available.
+   */
+  protected function getEnableDisableFormRoute(EntityTypeInterface $entity_type, $operation) {
+    if ($entity_type->hasLinkTemplate($operation . '-form')) {
+      $route = new Route($entity_type->getLinkTemplate($operation . '-form'));
+      $route
+        ->addDefaults([
+          '_entity_form' => "commerce_pricelist_item.$operation",
+          '_title_callback' => '\Drupal\Core\Entity\Controller\EntityController::title',
+        ])
+        ->setRequirement('_permission', $entity_type->getAdminPermission())
+        ->setOption('parameters', [
+          'commerce_pricelist' => [
+            'type' => 'entity:commerce_pricelist',
+          ],
+        ])
+        ->setRequirement('commerce_pricelist', '\d+')
         ->setOption('_admin_route', TRUE);
 
       return $route;

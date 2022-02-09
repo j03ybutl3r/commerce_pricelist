@@ -36,6 +36,8 @@ use Drupal\user\EntityOwnerTrait;
  *     "views_data" = "Drupal\commerce\CommerceEntityViewsData",
  *     "form" = {
  *       "add" = "Drupal\commerce_pricelist\Form\PriceListItemForm",
+ *       "enable" = "Drupal\commerce_pricelist\Form\PriceListItemEnableForm",
+ *       "disable" = "Drupal\commerce_pricelist\Form\PriceListItemDisableForm",
  *       "edit" = "Drupal\commerce_pricelist\Form\PriceListItemForm",
  *       "duplicate" = "Drupal\commerce_pricelist\Form\PriceListItemForm",
  *       "delete" = "Drupal\commerce_pricelist\Form\PriceListItemDeleteForm",
@@ -60,6 +62,8 @@ use Drupal\user\EntityOwnerTrait;
  *   links = {
  *     "add-form" = "/price-list/{commerce_pricelist}/prices/add",
  *     "edit-form" = "/price-list/{commerce_pricelist}/prices/{commerce_pricelist_item}/edit",
+ *     "enable-form" = "/price-list/{commerce_pricelist}/prices/{commerce_pricelist_item}/enable",
+ *     "disable-form" = "/price-list/{commerce_pricelist}/prices/{commerce_pricelist_item}/disable",
  *     "duplicate-form" = "/price-list/{commerce_pricelist}/prices/{commerce_pricelist_item}/duplicate",
  *     "delete-form" = "/price-list/{commerce_pricelist}/prices/{commerce_pricelist_item}/delete",
  *     "export-form" = "/price-list/{commerce_pricelist}/prices/export",
