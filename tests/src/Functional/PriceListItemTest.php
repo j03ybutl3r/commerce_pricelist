@@ -45,6 +45,13 @@ class PriceListItemTest extends CommerceBrowserTestBase {
   protected $priceListItemCollectionUri;
 
   /**
+   * The extension path resolver.
+   *
+   * @var \Drupal\Core\Extension\ExtensionPathResolver
+   */
+  protected $extensionPathResolver;
+
+  /**
    * {@inheritdoc}
    */
   protected static $modules = [
@@ -100,6 +107,7 @@ class PriceListItemTest extends CommerceBrowserTestBase {
     $this->priceListItemCollectionUri = Url::fromRoute('entity.commerce_pricelist_item.collection', [
       'commerce_pricelist' => $this->priceList->id(),
     ])->toString();
+    $this->extensionPathResolver = \Drupal::service('extension.path.resolver');
   }
 
   /**
@@ -221,7 +229,7 @@ class PriceListItemTest extends CommerceBrowserTestBase {
     $this->drupalGet($this->priceListItemCollectionUri);
     $this->clickLink('Import prices');
 
-    $filepath = drupal_get_path('module', 'commerce_pricelist_test') . '/files/prices.csv';
+    $filepath = $this->extensionPathResolver->getPath('module', 'commerce_pricelist_test') . '/files/prices.csv';
     $this->getSession()->getPage()->attachFileToField('files[csv]', $filepath);
     $this->submitForm([
       'mapping[quantity_column]' => 'qty',
@@ -269,7 +277,8 @@ class PriceListItemTest extends CommerceBrowserTestBase {
     $this->drupalGet($this->priceListItemCollectionUri);
     $this->clickLink('Import prices');
 
-    $filepath = drupal_get_path('module', 'commerce_pricelist_test') . '/files/prices.csv';
+    $test_module_path = $this->extensionPathResolver->getPath('module', 'commerce_pricelist_test');
+    $filepath = $test_module_path . '/files/prices.csv';
     $this->getSession()->getPage()->attachFileToField('files[csv]', $filepath);
     $this->submitForm([
       'mapping[quantity_column]' => 'qty',
@@ -289,7 +298,7 @@ class PriceListItemTest extends CommerceBrowserTestBase {
     $this->drupalGet($this->priceListItemCollectionUri);
     $this->clickLink('Import prices');
 
-    $filepath = drupal_get_path('module', 'commerce_pricelist_test') . '/files/prices_update.csv';
+    $filepath = $test_module_path . '/files/prices_update.csv';
     $this->getSession()->getPage()->attachFileToField('files[csv]', $filepath);
     $this->submitForm([
       'mapping[quantity_column]' => 'qty',
