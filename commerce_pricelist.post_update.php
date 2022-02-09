@@ -44,6 +44,7 @@ function commerce_pricelist_post_update_2(array &$sandbox = NULL) {
   $storage = \Drupal::entityTypeManager()->getStorage('commerce_pricelist');
   if (!isset($sandbox['current_count'])) {
     $query = $storage->getQuery();
+    $query->accessCheck(FALSE);
     $sandbox['total_count'] = $query->count()->execute();
     $sandbox['current_count'] = 0;
 
@@ -54,6 +55,7 @@ function commerce_pricelist_post_update_2(array &$sandbox = NULL) {
   }
 
   $query = $storage->getQuery();
+  $query->accessCheck(FALSE);
   $query->range($sandbox['current_count'], 25);
   $result = $query->execute();
   if (empty($result)) {

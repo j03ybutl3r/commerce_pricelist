@@ -273,7 +273,9 @@ class PriceList extends CommerceContentEntityBase implements PriceListInterface 
       return [];
     }
     $query = $this->entityTypeManager()->getStorage('commerce_pricelist_item')->getQuery();
-    $query->condition('price_list_id', $this->id());
+    $query
+      ->accessCheck(TRUE)
+      ->condition('price_list_id', $this->id());
     $result = $query->execute();
 
     return $result;
@@ -285,6 +287,7 @@ class PriceList extends CommerceContentEntityBase implements PriceListInterface 
   public static function postDelete(EntityStorageInterface $storage, array $entities) {
     $price_list_item_storage = \Drupal::entityTypeManager()->getStorage('commerce_pricelist_item');
     $query = $price_list_item_storage->getQuery();
+    $query->accessCheck(FALSE);
     $query->condition('price_list_id', EntityHelper::extractIds($entities), 'IN');
     $result = $query->execute();
     if (!empty($result)) {

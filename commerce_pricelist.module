@@ -64,6 +64,7 @@ function commerce_pricelist_entity_delete(EntityInterface $entity) {
     // A purchasable entity was deleted. Delete all of its price list items.
     $price_list_item_storage = \Drupal::entityTypeManager()->getStorage('commerce_pricelist_item');
     $query = $price_list_item_storage->getQuery();
+    $query->accessCheck(FALSE);
     $query->condition('type', $entity->getEntityTypeId());
     $query->condition('purchasable_entity', $entity->id());
     $result = $query->execute();
@@ -193,6 +194,7 @@ function commerce_pricelist_form_views_exposed_form_alter(&$form, FormStateInter
   $query = $price_list_storage->getQuery();
   $query
     ->condition('type', 'commerce_product_variation')
+    ->accessCheck(TRUE)
     ->sort('weight', 'ASC')
     ->sort('id', 'DESC');
   $count_query = clone $query;

@@ -82,6 +82,7 @@ class PriceListRepository implements PriceListRepositoryInterface {
     $price_list_item_storage = $this->entityTypeManager->getStorage('commerce_pricelist_item');
     $query = $price_list_item_storage->getQuery();
     $query
+      ->accessCheck(FALSE)
       ->condition('type', $entity->getEntityTypeId())
       ->condition('price_list_id', $price_list_ids, 'IN')
       ->condition('purchasable_entity', $entity->id())
@@ -168,6 +169,7 @@ class PriceListRepository implements PriceListRepositoryInterface {
     $price_list_storage = $this->entityTypeManager->getStorage('commerce_pricelist');
     $query = $price_list_storage->getQuery();
     $query
+      ->accessCheck(FALSE)
       ->condition('type', $bundle)
       ->condition('stores', [$store_id], 'IN')
       ->condition($query->orConditionGroup()

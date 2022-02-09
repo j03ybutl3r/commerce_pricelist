@@ -231,6 +231,7 @@ class PriceListItemExportForm extends FormBase {
 
     if (empty($context['sandbox'])) {
       $price_list_item_count = $price_list_item_storage->getQuery()
+        ->accessCheck(TRUE)
         ->condition('type', $price_list->bundle())
         ->condition('price_list_id', $price_list->id())
         ->count()
@@ -249,6 +250,7 @@ class PriceListItemExportForm extends FormBase {
     $remaining = $export_total - $export_count;
     $limit = ($remaining < self::BATCH_SIZE) ? $remaining : self::BATCH_SIZE;
     $price_list_item_ids = $price_list_item_storage->getQuery()
+      ->accessCheck(TRUE)
       ->condition('type', $price_list->bundle())
       ->condition('price_list_id', $price_list->id())
       ->range($export_count, $limit)

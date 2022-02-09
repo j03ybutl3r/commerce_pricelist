@@ -47,7 +47,7 @@ class PriceListItemTest extends CommerceBrowserTestBase {
   /**
    * {@inheritdoc}
    */
-  public static $modules = [
+  protected static $modules = [
     'commerce_product',
     'commerce_pricelist',
     'commerce_pricelist_test',
@@ -305,6 +305,7 @@ class PriceListItemTest extends CommerceBrowserTestBase {
     // Confirm that quantities 1 and 3 were updated, and quantity 5 was created.
     $price_list_item_ids = $price_list_item_storage->getQuery()
       ->condition('purchasable_entity', $this->firstVariation->id())
+      ->accessCheck(FALSE)
       ->condition('quantity', 1)
       ->execute();
     $this->assertCount(1, $price_list_item_ids);
@@ -318,6 +319,7 @@ class PriceListItemTest extends CommerceBrowserTestBase {
     $this->assertTrue($price_list_item->isEnabled());
 
     $price_list_item_ids = $price_list_item_storage->getQuery()
+      ->accessCheck(FALSE)
       ->condition('purchasable_entity', $this->secondVariation->id())
       ->condition('quantity', 3)
       ->execute();
@@ -331,6 +333,7 @@ class PriceListItemTest extends CommerceBrowserTestBase {
     $this->assertTrue($price_list_item->isEnabled());
 
     $price_list_item_ids = $price_list_item_storage->getQuery()
+      ->accessCheck(FALSE)
       ->condition('purchasable_entity', $this->secondVariation->id())
       ->condition('quantity', 5)
       ->execute();

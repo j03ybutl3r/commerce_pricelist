@@ -16,7 +16,7 @@ class PriceListTest extends CommerceBrowserTestBase {
   /**
    * {@inheritdoc}
    */
-  public static $modules = [
+  protected static $modules = [
     'commerce_product',
     'commerce_pricelist',
   ];
