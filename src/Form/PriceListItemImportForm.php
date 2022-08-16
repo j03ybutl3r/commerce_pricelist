@@ -430,7 +430,9 @@ class PriceListItemImportForm extends FormBase {
    */
   public static function batchDeleteUploadedFile($file_id, array &$context) {
     $file_storage = \Drupal::entityTypeManager()->getStorage('file');
+    /** @var \Drupal\file\FileInterface $file */
     $file = $file_storage->load($file_id);
+    unlink($file->getFileUri());
     $file->delete();
     $context['message'] = t('Removing uploaded CSV.');
     $context['finished'] = 1;
