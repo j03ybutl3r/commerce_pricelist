@@ -100,3 +100,19 @@ function commerce_pricelist_post_update_3() {
   ]);
   return implode('<br>', $result->getFailed());
 }
+
+/**
+ * Import the "commerce_pricelist_product_prices" view.
+ */
+function commerce_pricelist_post_update_4() {
+  if (!\Drupal::moduleHandler()->moduleExists('commerce_product')) {
+    return;
+  }
+  /** @var \Drupal\commerce\Config\ConfigUpdaterInterface $config_updater */
+  $config_updater = \Drupal::service('commerce.config_updater');
+  $result = $config_updater->import([
+    'views.view.commerce_pricelist_prices',
+  ]);
+
+  return implode('<br>', $result->getFailed());
+}
